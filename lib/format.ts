@@ -1,4 +1,31 @@
 import type { Entitlement } from "@/lib/rules/entitlement";
+import type { PriorityLevel } from "@/lib/rules/heat";
+
+const PRIORITY_LABELS: Record<PriorityLevel, string> = {
+  MERAH: "Merah",
+  KUNING: "Kuning",
+  HIJAU: "Hijau",
+};
+
+const PRIORITY_TONES: Record<PriorityLevel, "red" | "amber" | "green"> = {
+  MERAH: "red",
+  KUNING: "amber",
+  HIJAU: "green",
+};
+
+export function priorityLabel(p: PriorityLevel): string {
+  return PRIORITY_LABELS[p];
+}
+
+export function priorityTone(p: PriorityLevel): "red" | "amber" | "green" {
+  return PRIORITY_TONES[p];
+}
+
+export const TONE_BADGE: Record<"red" | "amber" | "green", string> = {
+  red: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300",
+  amber: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+  green: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
+};
 
 const kcal = new Intl.NumberFormat("id-ID");
 

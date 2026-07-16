@@ -4,6 +4,7 @@ import { getHousehold } from "@/lib/data/households";
 import { qrSvg } from "@/lib/qr";
 import { entitlementLine, formatKcal, formatWater } from "@/lib/format";
 import { AddResidentForm } from "./add-resident-form";
+import { HealthStatusControl } from "./health-status";
 
 export const dynamic = "force-dynamic";
 
@@ -124,9 +125,12 @@ export default async function HouseholdPage({
                         ` · ${r.chronicConditions.join(", ")}`}
                     </p>
                   </div>
-                  <p className="text-right text-xs tabular-nums text-zinc-500">
-                    {entitlementLine(r.entitlement)}
-                  </p>
+                  <div className="flex flex-col items-end gap-1">
+                    <p className="text-right text-xs tabular-nums text-zinc-500">
+                      {entitlementLine(r.entitlement)}
+                    </p>
+                    <HealthStatusControl residentId={r.id} current={r.healthStatus} />
+                  </div>
                 </li>
               ))}
             </ul>

@@ -26,6 +26,7 @@ const NAV = [
   { href: "/allocate", label: "Alokasi" },
   { href: "/distribute", label: "Distribusi" },
   { href: "/presence", label: "Presence" },
+  { href: "/complaints", label: "Keluhan" },
   { href: "/allocation-check", label: "Cek Alokasi" },
   { href: "/face-scan", label: "Face Scan" },
 ];
