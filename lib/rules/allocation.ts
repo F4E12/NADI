@@ -8,6 +8,22 @@ export type TentComposition = {
   hasPregnantResident: boolean;
 };
 
+export type ResidentComposition = {
+  age: number;
+  isPregnant: boolean;
+};
+
+export const TODDLER_MAX_AGE = 3;
+
+export function tentComposition(
+  residents: ResidentComposition[],
+): TentComposition {
+  return {
+    hasToddler: residents.some((r) => r.age <= TODDLER_MAX_AGE),
+    hasPregnantResident: residents.some((r) => r.isPregnant),
+  };
+}
+
 export type Decision = { allowed: true } | { allowed: false; reason: string };
 
 export function allocationDecision(

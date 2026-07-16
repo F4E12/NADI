@@ -1,0 +1,145 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { simulateMatch, type SimulatedMatch } from "./actions";
+
+type CameraState = "starting" | "live" | "blocked" | "insecure";
+
+export function FaceScan() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const [camera, setCamera] = useState<CameraState>("starting");
+  const [match, setMatch] = useState<SimulatedMatch | null>(null);
+  const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const setSafe = (state: CameraState) => {
+      if (!cancelled) setCamera(state);
+    };
+
+    const media = navigator.mediaDevices;
+    if (!window.isSecureContext || !media?.getUserMedia) {
+      void Promise.resolve().then(() => setSafe("insecure"));
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    media
+      .getUserMedia({ video: { facingMode: "user" }, audio: false })
+      .then((stream) => {
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        streamRef.current = stream;
+        if (videoRef.current) videoRef.current.srcObject = stream;
+        setSafe("live");
+      })
+      .catch(() => setSafe("blocked"));
+
+    return () => {
+      cancelled = true;
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
+
+  function freezeFrame() {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+    canvas.width = video.videoWidth || 480;
+    canvas.height = video.videoHeight || 360;
+    canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
+  }
+
+  async function runSimulation() {
+    setPending(true);
+    freezeFrame();
+    try {
+      const result = await simulateMatch();
+      setMatch(result);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <div className="grid gap-6 md:grid-cols-2">
+      <div className="flex flex-col gap-3">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-zinc-300 bg-zinc-900 dark:border-zinc-700">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="h-full w-full object-cover"
+          />
+          <canvas ref={canvasRef} className="hidden" />
+          <span className="absolute left-2 top-2 rounded bg-amber-500/90 px-2 py-0.5 text-xs font-bold text-black">
+            SIMULASI
+          </span>
+
+          {camera !== "live" && (
+            <div className="absolute inset-0 flex items-center justify-center bg-zinc-900/90 p-6 text-center text-sm text-zinc-300">
+              {camera === "starting" && "Meminta akses kamera…"}
+              {camera === "blocked" &&
+                "Akses kamera ditolak. Izinkan kamera di stasiun laptop untuk melihat pratinjau."}
+              {camera === "insecure" && (
+                <span>
+                  Kamera hanya aktif di stasiun laptop pada{" "}
+                  <span className="font-mono">localhost</span>. Alamat LAN bukan
+                  konteks aman, jadi peramban menolak kamera di sini (ADR-0003).
+                  Simulasi kecocokan tetap bisa dijalankan.
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={runSimulation}
+          disabled={pending}
+          className="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        >
+          {pending ? "Menyimulasikan…" : "Simulasikan kecocokan"}
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          Hasil (disimulasikan)
+        </h2>
+        {match ? (
+          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <p className="text-lg font-semibold">{match.residentName}</p>
+            <p className="text-sm text-zinc-500">
+              {match.age} th · Keluarga {match.householdName} · {match.tentName}
+            </p>
+            <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+              Ini bukan identifikasi. Resident dipilih acak dari data seed untuk
+              memperagakan antarmuka. Verifikasi identitas sebenarnya lewat Dompet
+              Gizi.
+            </p>
+            <Link
+              href={`/households/${match.householdId}`}
+              className="mt-3 inline-flex text-sm font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
+            >
+              Buka Household →
+            </Link>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-zinc-300 p-5 text-sm text-zinc-500 dark:border-zinc-700">
+            Belum ada. Tekan &ldquo;Simulasikan kecocokan&rdquo; untuk melihat
+            perilaku antarmuka.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
