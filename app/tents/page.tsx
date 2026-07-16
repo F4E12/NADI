@@ -1,5 +1,17 @@
+import Link from "next/link";
 import { listTentSummaries } from "@/lib/data/tents";
-import { formatKcal, formatWater } from "@/lib/format";
+import {
+  coverTone,
+  formatDaysOfCover,
+  formatKcal,
+  formatWater,
+} from "@/lib/format";
+
+const COVER_TONE_CLASS: Record<"red" | "amber" | "green", string> = {
+  red: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300",
+  amber: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+  green: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
+};
 
 export const dynamic = "force-dynamic";
 
@@ -27,10 +39,18 @@ export default async function TentsPage() {
               id={t.id}
               className="scroll-mt-20 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"
             >
-              <div className="flex items-baseline justify-between">
+              <div className="flex items-baseline justify-between gap-2">
                 <h2 className="font-semibold">{t.name}</h2>
-                <span className="text-sm tabular-nums text-zinc-500">
-                  {t.occupancy}/{t.maxCapacity} · {Math.round(ratio * 100)}%
+                <span className="flex items-center gap-2">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${COVER_TONE_CLASS[coverTone(t.daysOfCover)]}`}
+                    title="Days of Cover"
+                  >
+                    {formatDaysOfCover(t.daysOfCover)}
+                  </span>
+                  <span className="text-sm tabular-nums text-zinc-500">
+                    {t.occupancy}/{t.maxCapacity} · {Math.round(ratio * 100)}%
+                  </span>
                 </span>
               </div>
 
@@ -74,11 +94,19 @@ export default async function TentsPage() {
                 </div>
               </dl>
 
-              <p className="mt-3 text-xs text-zinc-500">
-                {qualifies
-                  ? "Memenuhi syarat untuk stok tinggi protein."
-                  : "Stok tinggi protein akan ditolak untuk Tenda ini."}
-              </p>
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <p className="text-xs text-zinc-500">
+                  {qualifies
+                    ? "Memenuhi syarat untuk stok tinggi protein."
+                    : "Stok tinggi protein akan ditolak untuk Tenda ini."}
+                </p>
+                <Link
+                  href={`/allocate?tent=${t.id}`}
+                  className="shrink-0 text-xs font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
+                >
+                  Alokasikan →
+                </Link>
+              </div>
             </section>
           );
         })}

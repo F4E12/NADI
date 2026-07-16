@@ -13,3 +13,14 @@ export function formatWater(litres: number): string {
 export function entitlementLine(e: Entitlement): string {
   return `${formatKcal(e.kcalPerDay)} · ${formatWater(e.cleanWaterLitresPerDay)} per hari`;
 }
+
+export function formatDaysOfCover(days: number): string {
+  if (!Number.isFinite(days)) return "∞";
+  return `${days.toFixed(1)} hari`;
+}
+
+export function coverTone(days: number): "red" | "amber" | "green" {
+  if (days < 1) return "red";
+  if (days < 2) return "amber";
+  return "green";
+}

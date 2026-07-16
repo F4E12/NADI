@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  allocatedKcalOf,
+  allocationCheck,
   allocationDecision,
   daysOfCover,
+  sufficiencyDecision,
   tentComposition,
 } from "./allocation";
 
@@ -88,5 +91,86 @@ describe("daysOfCover", () => {
 
   it("reports unbounded cover when nothing is required", () => {
     expect(daysOfCover(500, 0)).toBe(Infinity);
+  });
+});
+
+describe("allocatedKcalOf", () => {
+  it("sums quantity times kcal-per-unit across a tent's allocations", () => {
+    expect(
+      allocatedKcalOf([
+        { quantity: 2, kcalPerUnit: 3600 },
+        { quantity: 10, kcalPerUnit: 70 },
+      ]),
+    ).toBe(7900);
+  });
+
+  it("is zero for a dry tent", () => {
+    expect(allocatedKcalOf([])).toBe(0);
+  });
+});
+
+describe("sufficiencyDecision", () => {
+  const beras = { name: "Beras", unit: "kg" };
+
+  it("permits an allocation the pool can cover", () => {
+    expect(sufficiencyDecision(beras, 40, 100)).toEqual({ allowed: true });
+  });
+
+  it("refuses more than the pool holds, naming what is left", () => {
+    const decision = sufficiencyDecision(beras, 150, 100);
+    expect(decision.allowed).toBe(false);
+    if (!decision.allowed) {
+      expect(decision.reason).toContain("Beras");
+      expect(decision.reason).toContain("100 kg");
+      expect(decision.reason).toContain("150");
+    }
+  });
+
+  it("refuses a non-positive quantity", () => {
+    expect(sufficiencyDecision(beras, 0, 100).allowed).toBe(false);
+  });
+});
+
+describe("allocationCheck", () => {
+  const protein = { name: "Susu bubuk", unit: "kg", isHighProtein: true };
+  const staple = { name: "Beras", unit: "kg", isHighProtein: false };
+  const plainTent = { hasToddler: false, hasPregnantResident: false };
+  const qualifyingTent = { hasToddler: true, hasPregnantResident: false };
+
+  it("fails composition before it ever looks at the pool", () => {
+    const decision = allocationCheck({
+      stock: protein,
+      requestedQuantity: 5,
+      availableQuantity: 1000,
+      tent: plainTent,
+    });
+    expect(decision.allowed).toBe(false);
+    if (!decision.allowed) {
+      expect(decision.reason).toContain("no toddler and no pregnant resident");
+    }
+  });
+
+  it("fails on the pool once composition passes", () => {
+    const decision = allocationCheck({
+      stock: protein,
+      requestedQuantity: 5,
+      availableQuantity: 2,
+      tent: qualifyingTent,
+    });
+    expect(decision.allowed).toBe(false);
+    if (!decision.allowed) {
+      expect(decision.reason).toContain("Central Inventory holds only");
+    }
+  });
+
+  it("permits a staple the pool can cover regardless of composition", () => {
+    expect(
+      allocationCheck({
+        stock: staple,
+        requestedQuantity: 20,
+        availableQuantity: 50,
+        tent: plainTent,
+      }),
+    ).toEqual({ allowed: true });
   });
 });

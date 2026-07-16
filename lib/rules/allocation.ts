@@ -43,3 +43,41 @@ export function daysOfCover(allocatedKcal: number, tentKcalPerDay: number): numb
   if (tentKcalPerDay === 0) return Infinity;
   return allocatedKcal / tentKcalPerDay;
 }
+
+export function allocatedKcalOf(
+  allocations: { quantity: number; kcalPerUnit: number }[],
+): number {
+  return allocations.reduce((sum, a) => sum + a.quantity * a.kcalPerUnit, 0);
+}
+
+export function sufficiencyDecision(
+  stock: { name: string; unit: string },
+  requestedQuantity: number,
+  availableQuantity: number,
+): Decision {
+  if (!(requestedQuantity > 0)) {
+    return { allowed: false, reason: "Quantity to allocate must be greater than zero" };
+  }
+  if (requestedQuantity > availableQuantity) {
+    return {
+      allowed: false,
+      reason: `Central Inventory holds only ${availableQuantity} ${stock.unit} of ${stock.name}, cannot allocate ${requestedQuantity}`,
+    };
+  }
+  return { allowed: true };
+}
+
+export function allocationCheck(input: {
+  stock: StockFacts & { unit: string };
+  requestedQuantity: number;
+  availableQuantity: number;
+  tent: TentComposition;
+}): Decision {
+  const lock = allocationDecision(input.stock, input.tent);
+  if (!lock.allowed) return lock;
+  return sufficiencyDecision(
+    input.stock,
+    input.requestedQuantity,
+    input.availableQuantity,
+  );
+}

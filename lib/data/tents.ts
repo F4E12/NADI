@@ -4,7 +4,12 @@ import {
   tentEntitlement,
   type Entitlement,
 } from "@/lib/rules/entitlement";
-import { tentComposition, type TentComposition } from "@/lib/rules/allocation";
+import {
+  allocatedKcalOf,
+  daysOfCover,
+  tentComposition,
+  type TentComposition,
+} from "@/lib/rules/allocation";
 
 export type TentSummary = {
   id: string;
@@ -14,6 +19,8 @@ export type TentSummary = {
   householdCount: number;
   composition: TentComposition;
   requirement: Entitlement;
+  allocatedKcal: number;
+  daysOfCover: number;
 };
 
 export async function listTentSummaries(): Promise<TentSummary[]> {
@@ -29,11 +36,26 @@ export async function listTentSummaries(): Promise<TentSummary[]> {
           residents: { select: { age: true, isPregnant: true } },
         },
       },
+      allocations: {
+        select: {
+          quantity: true,
+          inventory: { select: { kcalPerUnit: true } },
+        },
+      },
     },
   });
 
   return tents.map((tent) => {
     const residents = tent.households.flatMap((h) => h.residents);
+    const requirement = tentEntitlement(
+      tent.households.map((h) => householdEntitlement(h.residents)),
+    );
+    const allocatedKcal = allocatedKcalOf(
+      tent.allocations.map((a) => ({
+        quantity: a.quantity,
+        kcalPerUnit: a.inventory.kcalPerUnit,
+      })),
+    );
     return {
       id: tent.id,
       name: tent.name,
@@ -41,9 +63,9 @@ export async function listTentSummaries(): Promise<TentSummary[]> {
       occupancy: residents.length,
       householdCount: tent.households.length,
       composition: tentComposition(residents),
-      requirement: tentEntitlement(
-        tent.households.map((h) => householdEntitlement(h.residents)),
-      ),
+      requirement,
+      allocatedKcal,
+      daysOfCover: daysOfCover(allocatedKcal, requirement.kcalPerDay),
     };
   });
 }
