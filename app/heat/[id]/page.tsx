@@ -1,0 +1,118 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getTentHeatDetail } from "@/lib/data/heat";
+import {
+  TONE_BADGE,
+  formatDaysOfCover,
+  priorityLabel,
+  priorityTone,
+} from "@/lib/format";
+
+export const dynamic = "force-dynamic";
+
+const HEALTH_LABELS: Record<string, string> = {
+  WELL: "Sehat",
+  SICK: "Sakit",
+  RECOVERING: "Pemulihan",
+};
+
+export default async function TentHeatDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const tent = await getTentHeatDetail(id);
+  if (!tent) notFound();
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <Link href="/heat" className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">
+          ← Peta Heat
+        </Link>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">{tent.name}</h1>
+          <span
+            className={`rounded-full px-3 py-1 text-sm font-medium ${TONE_BADGE[priorityTone(tent.heat.colour)]}`}
+          >
+            {priorityLabel(tent.heat.colour)}
+          </span>
+        </div>
+        <p className="mt-1 text-sm text-zinc-500">
+          {tent.occupancy}/{tent.maxCapacity} orang · cover {formatDaysOfCover(tent.daysOfCover)}
+        </p>
+      </div>
+
+      <section className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          Alasan Heat
+        </h2>
+        {tent.heat.reasons.length > 0 ? (
+          <ul className="mt-2 flex flex-col gap-1 text-sm">
+            {tent.heat.reasons.map((r, i) => (
+              <li key={i} className="flex gap-2">
+                <span className="text-zinc-400">•</span>
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-sm text-zinc-500">Tidak ada alasan perhatian.</p>
+        )}
+      </section>
+
+      {tent.openComplaints.length > 0 && (
+        <section className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            Keluhan terbuka (belum dikonfirmasi)
+          </h2>
+          <ul className="mt-2 flex flex-col gap-2 text-sm">
+            {tent.openComplaints.map((c, i) => (
+              <li key={i} className="flex flex-wrap items-center gap-2">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${TONE_BADGE[priorityTone(c.suggestedPriority)]}`}
+                >
+                  {priorityLabel(c.suggestedPriority)}
+                </span>
+                <span className="font-medium">{c.residentName}</span>
+                <span className="text-zinc-500">{c.symptoms.join(", ")}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="border-b border-zinc-200 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-800">
+          Residents ({tent.residents.length})
+        </h2>
+        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+          {tent.residents.map((r) => (
+            <li key={r.id} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-5 py-3">
+              <p className="font-medium">
+                {r.name}{" "}
+                <span className="text-sm font-normal text-zinc-500">· {r.age} th</span>
+                {r.healthStatus === "SICK" && (
+                  <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+                    {HEALTH_LABELS[r.healthStatus]}
+                  </span>
+                )}
+                {r.isPregnant && (
+                  <span className="ml-2 rounded-full bg-pink-100 px-2 py-0.5 text-xs font-medium text-pink-700 dark:bg-pink-950 dark:text-pink-300">
+                    hamil
+                  </span>
+                )}
+              </p>
+              <p className="text-xs text-zinc-500">
+                {r.chronicConditions.length > 0
+                  ? r.chronicConditions.join(", ")
+                  : "Tanpa kondisi kronis"}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  );
+}
