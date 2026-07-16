@@ -1,24 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NADI
+
+The operational record for a single **Posko** — an evacuation post — running with
+no internet. One laptop serves the site over its own local network; volunteers
+reach it from their phones with no install and no connectivity.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
+npm run db:setup
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`db:setup` runs the migrations, generates the Prisma client, and seeds a Posko
+already mid-operation.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Open [http://localhost:3000](http://localhost:3000).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`db:setup` leaves you with ~1,000 Residents in coherent Households across twelve
+Tents, a Dompet Gizi per Household, stock already allocated (with Tenda D close
+to dry), and Complaints both open and confirmed. Every screen has something real
+to render on first load — no manual data entry.
+
+To start the Posko over, delete `prisma/posko.db` and run `db:setup` again. The
+Transaction Log is append-only by construction — SQLite triggers refuse an update
+or a delete — so it cannot be cleared in place.
+
+## Layout
+
+- `prisma/` — the schema, migrations, and the seeder. SQLite in WAL mode; the
+  whole Posko is one file you could copy to a USB stick.
+- `lib/rules/` — the rules engine, split by area: `entitlement`, `allocation`,
+  `heat`. Plain domain data in, decisions out. **No module here holds a database
+  client or issues a query.**
+- `lib/db.ts` — data access. Owns the Prisma client and the WAL pragma.
+
+## Checks
+
+```bash
+npm run typecheck
+npm run lint
+```
 
 ## Learn More
 

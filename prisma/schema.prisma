@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Tent {
+  id          String @id @default(cuid())
+  name        String @unique
+  maxCapacity Int
+
+  households  Household[]
+  allocations TentAllocation[]
+}
+
+model Household {
+  id           String @id
+  name         String
+  qrPayload    String @unique
+  fallbackCode String @unique
+
+  tentId String
+  tent   Tent   @relation(fields: [tentId], references: [id])
+
+  residents    Resident[]
+  transactions TransactionLog[]
+
+  @@index([tentId])
+  @@index([name])
+}
+
+model Resident {
+  id           String  @id @default(cuid())
+  name         String
+  age          Int
+  nik          String?
+  isPregnant   Boolean @default(false)
+  healthStatus String  @default("WELL")
+
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id])
+
+  chronicConditions ChronicCondition[]
+  complaints        Complaint[]
+
+  @@index([householdId])
+  @@index([nik])
+  @@index([name])
+}
+
+model ChronicCondition {
+  id   String @id @default(cuid())
+  name String
+
+  residentId String
+  resident   Resident @relation(fields: [residentId], references: [id])
+
+  @@index([residentId])
+}
+
+model Inventory {
+  id            String  @id @default(cuid())
+  name          String  @unique
+  category      String
+  unit          String
+  quantity      Float
+  kcalPerUnit   Float   @default(0)
+  isHighProtein Boolean @default(false)
+
+  allocations TentAllocation[]
+}
+
+model TentAllocation {
+  id       String @id @default(cuid())
+  quantity Float
+
+  tentId String
+  tent   Tent   @relation(fields: [tentId], references: [id])
+
+  inventoryId String
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+
+  transactions TransactionLog[]
+
+  @@unique([tentId, inventoryId])
+  @@index([tentId])
+}
+
+model TransactionLog {
+  id        String   @id @default(cuid())
+  kind      String
+  quantity  Float
+  actor     String
+  createdAt DateTime @default(now())
+
+  householdId String?
+  household   Household? @relation(fields: [householdId], references: [id])
+
+  allocationId String?
+  allocation   TentAllocation? @relation(fields: [allocationId], references: [id])
+
+  @@index([householdId, createdAt])
+  @@index([createdAt])
+}
+
+model Complaint {
+  id                String    @id @default(cuid())
+  freeText          String
+  symptoms          String
+  suggestedPriority String
+  confirmedPriority String?
+  confirmedBy       String?
+  resolvedAt        DateTime?
+  createdAt         DateTime  @default(now())
+
+  residentId String
+  resident   Resident @relation(fields: [residentId], references: [id])
+
+  @@index([residentId])
+  @@index([resolvedAt])
+}
