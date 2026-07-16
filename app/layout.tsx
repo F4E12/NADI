@@ -21,6 +21,7 @@ export const metadata: Metadata = {
 const NAV = [
   { href: "/", label: "Beranda" },
   { href: "/join", label: "Gabung" },
+  { href: "/board", label: "Papan Warga" },
   { href: "/heat", label: "Heat" },
   { href: "/register", label: "Registrasi" },
   { href: "/tents", label: "Tenda" },
