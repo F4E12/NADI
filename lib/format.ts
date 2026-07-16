@@ -14,6 +14,15 @@ export function entitlementLine(e: Entitlement): string {
   return `${formatKcal(e.kcalPerDay)} · ${formatWater(e.cleanWaterLitresPerDay)} per hari`;
 }
 
+const dateTime = new Intl.DateTimeFormat("id-ID", {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
+
+export function formatDateTime(value: Date | string): string {
+  return dateTime.format(new Date(value));
+}
+
 export function formatDaysOfCover(days: number): string {
   if (!Number.isFinite(days)) return "∞";
   return `${days.toFixed(1)} hari`;

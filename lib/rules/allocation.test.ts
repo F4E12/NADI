@@ -4,6 +4,7 @@ import {
   allocationCheck,
   allocationDecision,
   daysOfCover,
+  distributionDecision,
   sufficiencyDecision,
   tentComposition,
 } from "./allocation";
@@ -172,5 +173,59 @@ describe("allocationCheck", () => {
         tent: plainTent,
       }),
     ).toEqual({ allowed: true });
+  });
+});
+
+describe("distributionDecision", () => {
+  const base = {
+    stockName: "Beras",
+    unit: "kg",
+    requestedQuantity: 5,
+    tentAllocationQuantity: 100,
+    householdKcalPerDay: 6600,
+    alreadyCollectedThisPeriod: false,
+  };
+
+  it("permits a handover the tent can cover to an entitled household", () => {
+    expect(distributionDecision(base)).toEqual({ allowed: true });
+  });
+
+  it("refuses a second collection in the same period, naming the objection", () => {
+    const decision = distributionDecision({ ...base, alreadyCollectedThisPeriod: true });
+    expect(decision.allowed).toBe(false);
+    if (!decision.allowed) {
+      expect(decision.reason).toContain("already collected");
+      expect(decision.reason).toContain("Beras");
+    }
+  });
+
+  it("refuses when the tent allocation is insufficient, naming what is left", () => {
+    const decision = distributionDecision({
+      ...base,
+      requestedQuantity: 150,
+      tentAllocationQuantity: 100,
+    });
+    expect(decision.allowed).toBe(false);
+    if (!decision.allowed) {
+      expect(decision.reason).toContain("holds only 100 kg");
+      expect(decision.reason).toContain("cannot distribute 150");
+    }
+  });
+
+  it("refuses a household with no entitlement", () => {
+    const decision = distributionDecision({ ...base, householdKcalPerDay: 0 });
+    expect(decision.allowed).toBe(false);
+    if (!decision.allowed) expect(decision.reason).toContain("no entitlement");
+  });
+
+  it("checks duplicate before sufficiency — the more actionable refusal wins", () => {
+    const decision = distributionDecision({
+      ...base,
+      alreadyCollectedThisPeriod: true,
+      requestedQuantity: 999,
+      tentAllocationQuantity: 1,
+    });
+    expect(decision.allowed).toBe(false);
+    if (!decision.allowed) expect(decision.reason).toContain("already collected");
   });
 });

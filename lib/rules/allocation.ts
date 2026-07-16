@@ -81,3 +81,37 @@ export function allocationCheck(input: {
     input.availableQuantity,
   );
 }
+
+export type DistributionFacts = {
+  stockName: string;
+  unit: string;
+  requestedQuantity: number;
+  tentAllocationQuantity: number;
+  householdKcalPerDay: number;
+  alreadyCollectedThisPeriod: boolean;
+};
+
+export function distributionDecision(f: DistributionFacts): Decision {
+  if (f.householdKcalPerDay <= 0) {
+    return {
+      allowed: false,
+      reason: "This household has no entitlement to draw a ration",
+    };
+  }
+  if (f.alreadyCollectedThisPeriod) {
+    return {
+      allowed: false,
+      reason: `This household already collected ${f.stockName} in this period`,
+    };
+  }
+  if (!(f.requestedQuantity > 0)) {
+    return { allowed: false, reason: "Quantity to distribute must be greater than zero" };
+  }
+  if (f.requestedQuantity > f.tentAllocationQuantity) {
+    return {
+      allowed: false,
+      reason: `This tent's allocation holds only ${f.tentAllocationQuantity} ${f.unit} of ${f.stockName}, cannot distribute ${f.requestedQuantity}`,
+    };
+  }
+  return { allowed: true };
+}
