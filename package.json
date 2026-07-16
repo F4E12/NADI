@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "tracer": "tsx scripts/tracer.ts",
     "db:reset": "prisma migrate reset --force",
     "db:setup": "prisma migrate deploy && prisma generate && tsx prisma/seed.ts",
     "postinstall": "prisma generate"
