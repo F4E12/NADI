@@ -11,9 +11,17 @@ import {
   type ResidentHit,
 } from "@/lib/data/complaints";
 import type { PriorityLevel } from "@/lib/rules/heat";
+import { extractSymptoms } from "@/lib/symptoms";
+import type { SymptomExtraction } from "@/lib/symptoms/extractor";
 
 export async function searchResidentsAction(query: string): Promise<ResidentHit[]> {
   return searchResidents(query);
+}
+
+export async function extractSymptomsAction(
+  freeText: string,
+): Promise<SymptomExtraction> {
+  return extractSymptoms(freeText);
 }
 
 export type ComplaintResult =

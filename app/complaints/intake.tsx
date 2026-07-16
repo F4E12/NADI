@@ -5,7 +5,11 @@ import { useMemo, useState, useTransition } from "react";
 import { SYMPTOM_CATALOG, classifyComplaint } from "@/lib/rules/classification";
 import { TONE_BADGE, priorityLabel, priorityTone } from "@/lib/format";
 import type { ResidentHit } from "@/lib/data/complaints";
-import { createComplaintAction, searchResidentsAction } from "./actions";
+import {
+  createComplaintAction,
+  extractSymptomsAction,
+  searchResidentsAction,
+} from "./actions";
 
 export function ComplaintIntake() {
   const router = useRouter();
@@ -13,11 +17,30 @@ export function ComplaintIntake() {
   const [results, setResults] = useState<ResidentHit[]>([]);
   const [selected, setSelected] = useState<ResidentHit | null>(null);
   const [symptoms, setSymptoms] = useState<string[]>([]);
+  const [freeText, setFreeText] = useState("");
+  const [source, setSource] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const suggested = useMemo(() => classifyComplaint(symptoms), [symptoms]);
+
+  function extract() {
+    if (!freeText.trim()) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await extractSymptomsAction(freeText);
+      setSymptoms((current) => [
+        ...current,
+        ...result.symptoms.filter((s) => !current.includes(s)),
+      ]);
+      setSource(
+        result.symptoms.length > 0
+          ? `${result.symptoms.length} gejala diusulkan · sumber: ${result.provider}`
+          : `Tidak ada gejala dikenali · sumber: ${result.provider}. Pilih manual di bawah.`,
+      );
+    });
+  }
 
   function search() {
     if (!query.trim()) return;
@@ -49,6 +72,8 @@ export function ComplaintIntake() {
           `Keluhan diajukan untuk ${selected.name}. Saran: ${priorityLabel(result.suggested)}. Konfirmasi di antrean di bawah.`,
         );
         setSymptoms([]);
+        setFreeText("");
+        setSource(null);
         router.refresh();
       } else {
         setError(result.error);
@@ -129,6 +154,30 @@ export function ComplaintIntake() {
           )}
         </div>
       )}
+
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+          Teks bebas (opsional) — ketik apa yang Anda dengar
+        </label>
+        <textarea
+          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+          rows={2}
+          value={freeText}
+          onChange={(e) => setFreeText(e.target.value)}
+          placeholder='mis. "dada saya sesak, sudah dua hari"'
+        />
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={extract}
+            disabled={pending || !freeText.trim()}
+            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm hover:border-zinc-500 disabled:opacity-50 dark:border-zinc-700"
+          >
+            Ekstrak gejala
+          </button>
+          {source && <span className="text-xs text-zinc-500">{source}</span>}
+        </div>
+      </div>
 
       <div className="flex flex-wrap gap-2">
         {SYMPTOM_CATALOG.map((s) => {
