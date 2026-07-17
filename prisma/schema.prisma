@@ -106,6 +106,13 @@ model TransactionLog {
   @@index([createdAt])
 }
 
+model Device {
+  id           String   @id @default(cuid())
+  mac          String   @unique
+  label        String?
+  registeredAt DateTime @default(now())
+}
+
 model Complaint {
   id                String    @id @default(cuid())
   freeText          String

@@ -1,10 +1,23 @@
 import { listInventoryOverview } from "@/lib/data/inventory";
+import { CreateInventoryControl, InventoryRecordControls } from "./inventory-crud";
+import { deviceRole } from "@/lib/device-role";
 
 export const dynamic = "force-dynamic";
 
 const num = new Intl.NumberFormat("id-ID");
 
 export default async function InventoryPage() {
+  if ((await deviceRole()) !== "VOLUNTEER") {
+    return (
+      <div className="nadi-product-page">
+        <h1 className="text-2xl font-semibold tracking-tight">Inventaris Posko</h1>
+        <p className="mt-1 max-w-2xl text-sm text-graphite">
+          Pengelolaan Inventaris hanya tersedia di perangkat Volunteer.
+        </p>
+      </div>
+    );
+  }
+
   const items = await listInventoryOverview();
 
   const byCategory = new Map<string, typeof items>();
@@ -13,6 +26,8 @@ export default async function InventoryPage() {
     list.push(item);
     byCategory.set(item.category, list);
   }
+  const categories = [...byCategory.keys()];
+  const units = [...new Set(items.map((item) => item.unit))].sort((a, b) => a.localeCompare(b));
 
   return (
     <div className="flex flex-col gap-6">
@@ -25,6 +40,8 @@ export default async function InventoryPage() {
           dipindahkan antar-Tenda.
         </p>
       </div>
+
+      <CreateInventoryControl categories={categories} units={units} />
 
       {[...byCategory.entries()].map(([category, list]) => (
         <section
@@ -41,6 +58,8 @@ export default async function InventoryPage() {
                 <th className="px-4 py-2 text-right font-medium">Pool pusat</th>
                 <th className="px-4 py-2 text-right font-medium">Di Tenda</th>
                 <th className="px-4 py-2 text-right font-medium">Total</th>
+                <th className="px-4 py-2 text-right font-medium">Kkal / satuan</th>
+                <th className="px-4 py-2 text-right font-medium">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -62,6 +81,17 @@ export default async function InventoryPage() {
                   </td>
                   <td className="px-4 py-2 text-right tabular-nums font-medium">
                     {num.format(i.total)} {i.unit}
+                  </td>
+                  <td className="px-4 py-2 text-right tabular-nums text-zinc-500">
+                    {num.format(i.kcalPerUnit)}
+                  </td>
+                  <td className="px-4 py-2 text-right align-top">
+                    <InventoryRecordControls
+                      id={i.id}
+                      name={i.name}
+                      quantity={i.central}
+                      unit={i.unit}
+                    />
                   </td>
                 </tr>
               ))}

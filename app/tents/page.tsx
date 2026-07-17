@@ -6,6 +6,8 @@ import {
   formatKcal,
   formatWater,
 } from "@/lib/format";
+import { CreateTentControl, TentRecordControls } from "./tent-crud";
+import { deviceRole } from "@/lib/device-role";
 
 const COVER_TONE_CLASS: Record<"red" | "amber" | "green", string> = {
   red: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300",
@@ -16,6 +18,17 @@ const COVER_TONE_CLASS: Record<"red" | "amber" | "green", string> = {
 export const dynamic = "force-dynamic";
 
 export default async function TentsPage() {
+  if ((await deviceRole()) !== "VOLUNTEER") {
+    return (
+      <div className="nadi-product-page">
+        <h1 className="text-2xl font-semibold tracking-tight">Tenda & Kebutuhan</h1>
+        <p className="mt-1 max-w-2xl text-sm text-graphite">
+          Pengelolaan Tenda hanya tersedia di perangkat Volunteer.
+        </p>
+      </div>
+    );
+  }
+
   const tents = await listTentSummaries();
 
   return (
@@ -28,6 +41,8 @@ export default async function TentsPage() {
           (balita / ibu hamil) menentukan apakah stok tinggi protein boleh masuk.
         </p>
       </div>
+
+      <CreateTentControl />
 
       <div className="grid gap-4 sm:grid-cols-2">
         {tents.map((t) => {
@@ -107,6 +122,12 @@ export default async function TentsPage() {
                   Alokasikan →
                 </Link>
               </div>
+
+              <TentRecordControls
+                id={t.id}
+                name={t.name}
+                maxCapacity={t.maxCapacity}
+              />
             </section>
           );
         })}

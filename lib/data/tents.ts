@@ -10,6 +10,11 @@ import {
   tentComposition,
   type TentComposition,
 } from "@/lib/rules/allocation";
+import {
+  isUniqueConstraintError,
+  normalizedName,
+  type MutationResult,
+} from "@/lib/data/mutation";
 
 export type TentSummary = {
   id: string;
@@ -77,4 +82,89 @@ export async function listTentOptions(): Promise<TentOption[]> {
     orderBy: { name: "asc" },
     select: { id: true, name: true },
   });
+}
+
+async function tentNameIsTaken(name: string, excludingId?: string): Promise<boolean> {
+  const tents = await prisma.tent.findMany({
+    where: excludingId ? { id: { not: excludingId } } : undefined,
+    select: { name: true },
+  });
+  const candidate = normalizedName(name);
+  return tents.some((tent) => normalizedName(tent.name) === candidate);
+}
+
+export async function createTent(input: {
+  name: string;
+  maxCapacity: number;
+}): Promise<MutationResult> {
+  const name = input.name.trim();
+  if (!name) return { ok: false, error: "Nama Tenda wajib diisi" };
+  if (!Number.isInteger(input.maxCapacity) || input.maxCapacity <= 0) {
+    return { ok: false, error: "Kapasitas harus berupa bilangan bulat lebih dari nol" };
+  }
+  if (await tentNameIsTaken(name)) {
+    return { ok: false, error: "Nama Tenda sudah digunakan" };
+  }
+
+  try {
+    await prisma.tent.create({ data: { name, maxCapacity: input.maxCapacity } });
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      return { ok: false, error: "Nama Tenda sudah digunakan" };
+    }
+    throw error;
+  }
+  return { ok: true };
+}
+
+export async function renameTent(input: {
+  id: string;
+  name: string;
+}): Promise<MutationResult> {
+  const name = input.name.trim();
+  if (!name) return { ok: false, error: "Nama Tenda wajib diisi" };
+
+  const existing = await prisma.tent.findUnique({
+    where: { id: input.id },
+    select: { id: true },
+  });
+  if (!existing) return { ok: false, error: "Tenda tidak ditemukan" };
+  if (await tentNameIsTaken(name, input.id)) {
+    return { ok: false, error: "Nama Tenda sudah digunakan" };
+  }
+
+  try {
+    await prisma.tent.update({ where: { id: input.id }, data: { name } });
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      return { ok: false, error: "Nama Tenda sudah digunakan" };
+    }
+    throw error;
+  }
+  return { ok: true };
+}
+
+export async function deleteTent(id: string): Promise<MutationResult> {
+  const tent = await prisma.tent.findUnique({
+    where: { id },
+    select: {
+      _count: { select: { households: true, allocations: true } },
+    },
+  });
+  if (!tent) return { ok: false, error: "Tenda tidak ditemukan" };
+  if (tent._count.households > 0) {
+    return {
+      ok: false,
+      error: `Tenda masih berisi ${tent._count.households} Household`,
+    };
+  }
+  if (tent._count.allocations > 0) {
+    return {
+      ok: false,
+      error: `Tenda masih memiliki ${tent._count.allocations} alokasi atau riwayat stok`,
+    };
+  }
+
+  await prisma.tent.delete({ where: { id } });
+  return { ok: true };
 }
