@@ -111,7 +111,7 @@ export function ComplaintIntake() {
               e.preventDefault();
               search();
             }}
-            className="flex gap-2"
+            className="flex flex-wrap gap-2"
           >
             <input
               className="flex-1 rounded-lg border border-fog bg-white px-3 py-2 text-sm outline-none focus:border-lavender"

@@ -69,7 +69,7 @@ export function HeatGrid({ tents }: { tents: TentHeat[] }) {
                 <div key={tent.id} className="col-span-6 grid grid-cols-subgrid">
                   <Link
                     href={`/heat/${tent.id}`}
-                    className="group flex items-center gap-2 rounded-md py-1 pr-3 text-sm font-medium hover:text-sky"
+                    className="group sticky left-0 z-10 flex items-center gap-2 rounded-md bg-paper-white py-1 pr-3 text-sm font-medium hover:text-sky"
                   >
                     <span
                       className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[tent.heat.colour]}`}

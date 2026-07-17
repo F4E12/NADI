@@ -46,13 +46,21 @@ export default async function InventoryPage() {
       {[...byCategory.entries()].map(([category, list]) => (
         <section
           key={category}
-          className="nadi-table-section"
+          className="nadi-table-section nadi-inventory-section"
         >
-          <h2 className="border-b border-fog px-4 py-3 text-sm font-semibold">
+          <h2 className="nadi-inventory-category">
             {category}
           </h2>
           <div className="nadi-table-scroll">
-            <table className="nadi-data-table text-sm">
+            <table className="nadi-data-table nadi-inventory-table nadi-stack-table text-sm">
+              <colgroup>
+                <col className="nadi-inventory-col-stock" />
+                <col className="nadi-inventory-col-quantity" />
+                <col className="nadi-inventory-col-quantity" />
+                <col className="nadi-inventory-col-quantity" />
+                <col className="nadi-inventory-col-kcal" />
+                <col className="nadi-inventory-col-actions" />
+              </colgroup>
               <thead>
                 <tr className="text-left text-ash">
                   <th className="px-4 py-2 font-medium">Stok</th>
@@ -74,16 +82,16 @@ export default async function InventoryPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-2 text-right tabular-nums">
+                    <td data-label="Pool pusat" className="px-4 py-2 text-right tabular-nums">
                       {num.format(i.central)} {i.unit}
                     </td>
-                    <td className="px-4 py-2 text-right tabular-nums text-ash">
+                    <td data-label="Di Tenda" className="px-4 py-2 text-right tabular-nums text-ash">
                       {num.format(i.allocated)} {i.unit}
                     </td>
-                    <td className="px-4 py-2 text-right tabular-nums font-medium">
+                    <td data-label="Total" className="px-4 py-2 text-right tabular-nums font-medium">
                       {num.format(i.total)} {i.unit}
                     </td>
-                    <td className="px-4 py-2 text-right tabular-nums text-ash">
+                    <td data-label="Kkal / satuan" className="px-4 py-2 text-right tabular-nums text-ash">
                       {num.format(i.kcalPerUnit)}
                     </td>
                     <td className="px-4 py-2 text-right align-top">

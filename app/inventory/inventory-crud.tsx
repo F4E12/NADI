@@ -185,7 +185,7 @@ function QuantityForm({ id, quantity, unit, onClose }: {
   }, [onClose, state.ok]);
 
   return (
-    <form action={formAction} className="grid min-w-56 gap-2">
+    <form action={formAction} className="grid w-full max-w-56 gap-2">
       <input type="hidden" name="id" value={id} />
       <label className="grid gap-1 text-left text-xs font-medium text-graphite">
         Jumlah pool pusat ({unit})
@@ -208,11 +208,11 @@ function DeleteInventoryForm({ id, name, onClose }: {
   const [state, formAction] = useActionState(deleteInventoryAction, INITIAL_STATE);
 
   return (
-    <form action={formAction} className="min-w-64 border border-red-300 bg-red-50 p-3 text-left">
+    <form action={formAction} className="w-full max-w-64 border border-red-300 bg-red-50 p-3 text-left">
       <input type="hidden" name="id" value={id} />
       <p className="text-sm font-medium text-red-800">Hapus {name} secara permanen?</p>
       <p className="mt-1 text-xs text-red-700">Inventaris dengan alokasi atau riwayat stok tidak dapat dihapus.</p>
-      <div className="mt-3 flex justify-end gap-2">
+      <div className="mt-3 flex flex-wrap justify-end gap-2">
         <SubmitButton danger>Hapus permanen</SubmitButton>
         <button type="button" onClick={onClose} className="border border-fog px-2 py-1 text-xs">Batal</button>
       </div>

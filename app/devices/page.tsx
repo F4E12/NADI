@@ -47,7 +47,7 @@ export default async function DevicesPage() {
         ) : (
           <ul className="divide-y divide-fog">
             {devices.map((d) => (
-              <li key={d.id} className="flex items-center gap-4 px-5 py-3">
+              <li key={d.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
                 <div className="flex-1">
                   <p className="text-sm font-medium">{d.label ?? "Tanpa label"}</p>
                   <p className="font-mono text-xs text-ash">{d.mac}</p>
@@ -85,7 +85,7 @@ export default async function DevicesPage() {
         ) : (
           <ul className="divide-y divide-fog">
             {neighbours.map((n) => (
-              <li key={n.mac} className="flex items-center gap-4 px-5 py-3">
+              <li key={n.mac} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
                 <div className="flex-1">
                   <p className="font-mono text-sm">{n.mac}</p>
                   <p className="text-xs text-ash">{n.ip}</p>
@@ -95,12 +95,12 @@ export default async function DevicesPage() {
                     Terdaftar
                   </span>
                 ) : (
-                  <form action={registerDeviceAction} className="flex items-center gap-2">
+                  <form action={registerDeviceAction} className="flex w-full items-center gap-2 sm:w-auto">
                     <input type="hidden" name="mac" value={n.mac} />
                     <input
                       name="label"
                       placeholder="Label (mis. HP Budi)"
-                      className="rounded-lg border border-fog bg-white px-3 py-1.5 text-sm outline-none focus:border-lavender"
+                      className="min-w-0 flex-1 rounded-lg border border-fog bg-white px-3 py-1.5 text-sm outline-none focus:border-lavender sm:w-52 sm:flex-none"
                     />
                     <button
                       type="submit"

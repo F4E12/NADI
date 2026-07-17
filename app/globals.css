@@ -225,8 +225,25 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .nadi-table-scroll { width: 100%; overflow-x: auto; padding: 0 12px 12px; scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
 .nadi-product-page .nadi-table-section { overflow: visible; border: 0 !important; background: transparent !important; }
 .nadi-product-page .nadi-table-section > h2 { min-height: auto; padding: 0 12px 4px; border: 0 !important; background: transparent; font-size: 13px; }
+.nadi-product-page .nadi-inventory-section > .nadi-inventory-category {
+  min-height: auto;
+  margin: 0;
+  padding: 0 12px 4px;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+}
 .nadi-product-page table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
 .nadi-product-page .nadi-data-table { min-width: 560px; }
+.nadi-product-page .nadi-inventory-table { min-width: 820px; table-layout: fixed; }
+.nadi-inventory-col-stock { width: 25%; }
+.nadi-inventory-col-quantity { width: 15%; }
+.nadi-inventory-col-kcal { width: 14%; }
+.nadi-inventory-col-actions { width: 16%; }
+.nadi-product-page .nadi-inventory-table :is(th, td) { vertical-align: middle; }
+.nadi-product-page .nadi-inventory-table :is(th, td):last-child { white-space: nowrap; }
 .nadi-product-page thead { background: transparent; }
 .nadi-product-page :is(th, td) { border: 0 !important; }
 .nadi-product-page th { padding: 6px 14px 8px !important; color: var(--muted); font-size: 10px; font-weight: 600 !important; letter-spacing: .035em; }
@@ -242,6 +259,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .nadi-product-page tbody tr:hover td { background: color-mix(in oklab, var(--mint) 20%, var(--canvas)); }
 .nadi-product-page tbody tr:hover td:first-child { transform: translateX(3px); }
 .nadi-product-page .nadi-matrix-table { min-width: 680px; }
+.nadi-product-page .nadi-matrix-table :is(th, td):first-child { position: sticky; left: 0; z-index: 1; }
+.nadi-product-page .nadi-matrix-table th:first-child { background: var(--canvas); }
 .nadi-product-page .nadi-matrix-action {
   display: inline-grid;
   width: 36px;
@@ -396,7 +415,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 }
 
 @media (max-width: 760px) {
-  .nadi-nav { min-height: 66px; grid-template-columns: 1fr auto auto; }.nadi-nav-brand { padding: 0 18px; }.nadi-nav-brand strong { font-size: 18px; }.nadi-nav-status { display: none; }.nadi-nav-action { min-width: 136px; padding: 0 14px; font-size: 11px; }.nadi-nav-mobile { position: relative; display: block; width: 60px; border-left: 1px solid var(--rule); }.nadi-nav-mobile > summary { display: grid; width: 60px; height: 65px; place-content: center; gap: 6px; cursor: pointer; list-style: none; }.nadi-nav-mobile > summary span { display: block; width: 20px; height: 1px; background: var(--ink); }.nadi-nav-mobile > div { position: absolute; top: 66px; right: 0; display: grid; width: min(330px, 100vw); grid-template-columns: 1fr 1fr; border: 1px solid var(--rule); background: var(--canvas); }.nadi-nav-mobile:not([open]) > div { display: none; }.nadi-nav-mobile > div a { padding: 15px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); color: var(--ink); font-size: 12px; text-decoration: none; }
+  .nadi-nav { min-height: 66px; grid-template-columns: 1fr auto auto; }.nadi-nav-brand { padding: 0 18px; }.nadi-nav-brand strong { font-size: 18px; }.nadi-nav-status { display: none; }.nadi-nav-action { min-width: 136px; padding: 0 14px; font-size: 11px; }.nadi-nav-mobile { position: relative; display: block; width: 60px; border-left: 1px solid var(--rule); }.nadi-nav-mobile > summary { display: grid; width: 100%; height: 65px; place-content: center; gap: 6px; cursor: pointer; list-style: none; }.nadi-nav-mobile > summary span { display: block; width: 20px; height: 1px; background: var(--ink); }.nadi-nav-mobile > div { position: absolute; top: 66px; right: 0; display: grid; width: min(330px, 100vw); grid-template-columns: 1fr 1fr; border: 1px solid var(--rule); background: var(--canvas); }.nadi-nav-mobile:not([open]) > div { display: none; }.nadi-nav-mobile > div a { padding: 15px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); color: var(--ink); font-size: 12px; text-decoration: none; }
   .nadi-hero { min-height: 820px; }.nadi-hero-copy { padding-top: 50px; padding-bottom: 300px; }.nadi-hero h1 { font-size: clamp(48px, 13vw, 68px); }.nadi-hero-lede { font-size: 15px; }.nadi-hero-actions { flex-direction: column; gap: 12px; }.nadi-signal { font-size: 10px; }.signal-a { top: 8%; left: -16px; }.signal-b { top: 14%; right: -30px; }.signal-c { top: 47%; left: -48px; }.signal-d { top: 50%; right: -30px; }.signal-e, .signal-f { display: none; }
   .nadi-hero-console { width: calc(100% - 26px); }.nadi-console-grid { grid-template-columns: repeat(2, 1fr); }.nadi-console-grid > div { min-height: 96px; border-bottom: 1px solid var(--rule); }.nadi-console-grid > div:nth-child(2) { border-right: 0; }.nadi-console-grid strong { font-size: 28px; }
   .nadi-trust-strip { grid-template-columns: 1fr; }.nadi-trust-strip p { border-right: 0; border-bottom: 1px solid var(--rule); }.nadi-trust-strip ul { grid-template-columns: 1fr; }.nadi-trust-strip li { min-height: 58px; border-right: 0; border-bottom: 1px solid var(--rule); }
@@ -414,6 +433,20 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
   .nadi-product-page section[class*="overflow-hidden"] { padding-left: 0; padding-right: 0; }
   .nadi-product-page form[class*="flex-wrap"] :is(input, select) { min-width: 100%; }
   .nadi-product-page form[class*="flex-wrap"] button { width: 100%; }
+}
+
+@media (max-width: 760px) {
+  .nadi-product-page .nadi-fit-table { min-width: 0; }
+  .nadi-product-page .nadi-stack-table { display: block; min-width: 0 !important; border-spacing: 0; }
+  .nadi-product-page .nadi-stack-table :is(thead, colgroup) { display: none; }
+  .nadi-product-page .nadi-stack-table tbody { display: flex; flex-direction: column; gap: 8px; }
+  .nadi-product-page .nadi-stack-table tbody tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 14px; padding: 14px; border-radius: 10px; background: color-mix(in oklab, var(--linen) 82%, var(--canvas)); }
+  .nadi-product-page .nadi-stack-table tbody tr:nth-child(even) { background: color-mix(in oklab, var(--mist) 52%, var(--canvas)); }
+  .nadi-product-page .nadi-stack-table tbody td { display: block; min-width: 0; padding: 0 !important; border-radius: 0 !important; background: transparent !important; text-align: left; transform: none !important; }
+  .nadi-product-page .nadi-stack-table tbody td:first-child { grid-column: 1 / -1; }
+  .nadi-product-page .nadi-stack-table tbody td:last-child:not([data-label]) { grid-column: 1 / -1; }
+  .nadi-product-page .nadi-stack-table td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 3px; color: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: .035em; }
+  .nadi-product-page .nadi-inventory-table tbody tr { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 480px) {

@@ -148,7 +148,7 @@ export function Distribute() {
           </p>
 
           <div className="nadi-table-scroll rounded-lg border border-fog bg-white">
-            <table className="w-full text-sm">
+            <table className="nadi-stack-table w-full text-sm">
               <thead className="bg-linen text-left text-xs uppercase tracking-wide text-ash">
                 <tr>
                   <th className="px-3 py-2">Barang</th>
@@ -169,17 +169,17 @@ export function Distribute() {
                         {row.collectedThisPeriod ? " · sudah diambil" : ""}
                       </div>
                     </td>
-                    <td className="px-3 py-2 tabular-nums text-ash">
+                    <td data-label="Sisa" className="px-3 py-2 tabular-nums text-ash">
                       {row.available} {row.unit}
                     </td>
-                    <td className="px-3 py-2 tabular-nums text-ash">
+                    <td data-label="Saran" className="px-3 py-2 tabular-nums text-ash">
                       {row.suggestedQuantity > 0
                         ? `${row.suggestedQuantity} ${row.unit}`
                         : "—"}
                     </td>
-                    <td className="px-3 py-2 text-right">
+                    <td data-label="Ambil" className="px-3 py-2 text-right">
                       <input
-                        className="w-24 rounded-lg border border-fog bg-white px-2 py-1 text-right text-sm outline-none focus:border-lavender"
+                        className="w-full max-w-24 rounded-lg border border-fog bg-white px-2 py-1 text-right text-sm outline-none focus:border-lavender"
                         type="number"
                         min={0}
                         step="any"

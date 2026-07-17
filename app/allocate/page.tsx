@@ -84,7 +84,7 @@ export default async function AllocatePage({
           </p>
         ) : (
           <div className="nadi-table-scroll mt-2">
-            <table className="nadi-data-table text-sm">
+            <table className="nadi-data-table nadi-fit-table text-sm">
               <thead>
                 <tr className="text-left text-ash">
                   <th className="py-1 font-medium">Stok</th>
