@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useState, useTransition } from "react";
-import { registerHousehold } from "../actions";
+import { registerHousehold, type RegisterResult } from "../actions";
 import {
   ResidentFields,
   draftToInput,
@@ -10,19 +10,25 @@ import {
   type ResidentDraft,
 } from "../resident-fields";
 import type { TentOption } from "@/lib/data/tents";
+import type { DeviceRole } from "@/lib/device-role";
+import { qrDownload } from "@/lib/qr-download";
+
+type Registration = Extract<RegisterResult, { ok: true }>;
 
 export function NewHouseholdForm({
   tents,
   initialName,
+  role,
 }: {
   tents: TentOption[];
   initialName: string;
+  role: DeviceRole;
 }) {
-  const router = useRouter();
   const [name, setName] = useState(initialName);
   const [tentId, setTentId] = useState(tents[0]?.id ?? "");
   const [residents, setResidents] = useState<ResidentDraft[]>([emptyResident()]);
   const [error, setError] = useState<string | null>(null);
+  const [registration, setRegistration] = useState<Registration | null>(null);
   const [pending, startTransition] = useTransition();
 
   const updateResident = (i: number, next: ResidentDraft) =>
@@ -40,11 +46,57 @@ export function NewHouseholdForm({
         residents: residents.map(draftToInput),
       });
       if (result.ok) {
-        router.push(`/households/${result.id}`);
+        setRegistration(result);
       } else {
         setError(result.error);
       }
     });
+  }
+
+  if (registration) {
+    const download = qrDownload(registration.qrSvg, registration.id);
+
+    return (
+      <section
+        className="rounded-xl border border-lavender/40 bg-white p-6"
+        aria-live="polite"
+      >
+        <p className="text-xs font-semibold uppercase tracking-wide text-iris">
+          Registrasi berhasil
+        </p>
+        <h2 className="mt-2 text-xl font-semibold">Unduh Dompet Gizi Anda</h2>
+        <p className="mt-1 max-w-xl text-sm text-graphite">
+          Simpan QR ini di ponsel dan tunjukkan saat mengambil ransum untuk
+          Household {name}.
+        </p>
+        <div
+          className="mx-auto mt-5 h-52 w-52 [&>svg]:h-full [&>svg]:w-full"
+          aria-label={`Kode QR Dompet Gizi ${registration.id}`}
+          dangerouslySetInnerHTML={{ __html: registration.qrSvg }}
+        />
+        <p className="mt-4 text-center text-sm text-ash">
+          Kode cadangan: {" "}
+          <strong className="font-mono text-lg tracking-widest text-carbon">
+            {registration.fallbackCode}
+          </strong>
+        </p>
+        <div className="mt-5 flex flex-wrap justify-center gap-3">
+          <a
+            href={download.href}
+            download={download.filename}
+            className="rounded-lg bg-lavender px-5 py-2.5 text-sm font-medium text-white hover:bg-iris"
+          >
+            Unduh QR Dompet Gizi
+          </a>
+          <Link
+            href="/board"
+            className="rounded-lg border border-fog px-5 py-2.5 text-sm hover:border-ash"
+          >
+            Lihat Papan Warga
+          </Link>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -92,6 +144,7 @@ export function NewHouseholdForm({
             onChange={(next) => updateResident(i, next)}
             onRemove={() => removeResident(i)}
             removable={residents.length > 1}
+            showHealthStatus={role === "VOLUNTEER"}
           />
         ))}
         <button
@@ -101,6 +154,12 @@ export function NewHouseholdForm({
         >
           + Tambah Resident
         </button>
+        {role === "RESIDENT" && (
+          <p className="text-xs text-ash">
+            Status kesehatan dikonfirmasi oleh Relawan. Setelah mendaftar,
+            gunakan Lapor kebutuhan jika ada anggota yang sedang sakit.
+          </p>
+        )}
       </div>
 
       {error && (

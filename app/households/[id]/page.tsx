@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getHousehold } from "@/lib/data/households";
+import {
+  getHousehold,
+  getHouseholdResidentRoster,
+  type HealthStatus,
+  type HouseholdResidentRoster,
+} from "@/lib/data/households";
+import { deviceRole } from "@/lib/device-role";
 import { qrSvg } from "@/lib/qr";
 import { entitlementLine, formatKcal, formatWater } from "@/lib/format";
 import { AddResidentForm } from "./add-resident-form";
@@ -8,11 +14,15 @@ import { HealthStatusControl } from "./health-status";
 
 export const dynamic = "force-dynamic";
 
-const HEALTH_LABELS: Record<string, string> = {
+const HEALTH_LABELS: Record<HealthStatus, string> = {
   WELL: "Sehat",
   SICK: "Sakit",
   RECOVERING: "Pemulihan",
 };
+
+function healthStatusLabel(status: HealthStatus): string {
+  return HEALTH_LABELS[status];
+}
 
 export default async function HouseholdPage({
   params,
@@ -20,6 +30,14 @@ export default async function HouseholdPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const role = await deviceRole();
+
+  if (role === "RESIDENT") {
+    const household = await getHouseholdResidentRoster(id);
+    if (!household) notFound();
+    return <ResidentRoster household={household} />;
+  }
+
   const household = await getHousehold(id);
   if (!household) notFound();
 
@@ -115,7 +133,7 @@ export default async function HouseholdPage({
                       )}
                       {r.healthStatus !== "WELL" && (
                         <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-                          {HEALTH_LABELS[r.healthStatus] ?? r.healthStatus}
+                          {healthStatusLabel(r.healthStatus)}
                         </span>
                       )}
                     </p>
@@ -139,6 +157,44 @@ export default async function HouseholdPage({
           <AddResidentForm householdId={household.id} />
         </div>
       </div>
+    </div>
+  );
+}
+
+function ResidentRoster({
+  household,
+}: {
+  household: HouseholdResidentRoster;
+}) {
+  return (
+    <div className="nadi-product-page flex flex-col gap-6">
+      <div>
+        <Link href="/presence" className="text-sm text-ash hover:text-carbon">
+          ← Presence
+        </Link>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
+          Household {household.name}
+        </h1>
+      </div>
+
+      <section className="overflow-hidden rounded-xl border border-fog bg-white">
+        <h2 className="border-b border-fog px-5 py-3 text-xs font-semibold uppercase tracking-wide text-ash">
+          Residents
+        </h2>
+        <ul className="divide-y divide-fog">
+          {household.residents.map((resident) => (
+            <li
+              key={resident.id}
+              className="flex items-center justify-between gap-4 px-5 py-3"
+            >
+              <span className="font-medium">{resident.name}</span>
+              <span className="rounded-full bg-mist px-2 py-0.5 text-xs font-medium text-graphite">
+                {healthStatusLabel(resident.healthStatus)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

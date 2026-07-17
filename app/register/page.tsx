@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { searchHouseholds } from "@/lib/data/households";
+import { deviceRole } from "@/lib/device-role";
 
 export const dynamic = "force-dynamic";
 
@@ -8,6 +10,8 @@ export default async function RegisterPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
+  if ((await deviceRole()) === "RESIDENT") redirect("/register/new");
+
   const { q = "" } = await searchParams;
   const query = q.trim();
   const results = query ? await searchHouseholds(query) : [];

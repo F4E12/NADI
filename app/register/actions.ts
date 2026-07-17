@@ -9,6 +9,8 @@ import {
   type NewResident,
 } from "@/lib/data/households";
 import { deviceRole } from "@/lib/device-role";
+import { qrSvg } from "@/lib/qr";
+import { registrationHealthStatus } from "@/lib/registration-policy";
 
 export type ResidentInput = {
   name: string;
@@ -20,12 +22,19 @@ export type ResidentInput = {
 };
 
 export type RegisterResult =
+  | { ok: true; id: string; qrSvg: string; fallbackCode: string }
+  | { ok: false; error: string };
+
+export type AddResidentResult =
   | { ok: true; id: string }
   | { ok: false; error: string };
 
 const HEALTH_STATUSES: HealthStatus[] = ["WELL", "SICK", "RECOVERING"];
 
-function parseResident(input: ResidentInput): NewResident | { error: string } {
+function parseResident(
+  input: ResidentInput,
+  role: "VOLUNTEER" | "RESIDENT",
+): NewResident | { error: string } {
   const name = input.name.trim();
   if (!name) return { error: "Setiap Resident harus punya nama" };
 
@@ -34,9 +43,10 @@ function parseResident(input: ResidentInput): NewResident | { error: string } {
     return { error: `Umur tidak valid untuk ${name}` };
   }
 
-  const healthStatus = HEALTH_STATUSES.includes(input.healthStatus)
+  const requestedHealthStatus = HEALTH_STATUSES.includes(input.healthStatus)
     ? input.healthStatus
     : "WELL";
+  const healthStatus = registrationHealthStatus(requestedHealthStatus, role);
 
   const nik = input.nik.trim();
 
@@ -57,9 +67,7 @@ export async function registerHousehold(input: {
   tentId: string;
   residents: ResidentInput[];
 }): Promise<RegisterResult> {
-  if ((await deviceRole()) !== "VOLUNTEER") {
-    return { ok: false, error: "Registrasi khusus perangkat Volunteer" };
-  }
+  const role = await deviceRole();
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Household harus punya nama keluarga" };
   if (!input.tentId) return { ok: false, error: "Pilih Tenda untuk Household ini" };
@@ -69,22 +77,31 @@ export async function registerHousehold(input: {
 
   const residents: NewResident[] = [];
   for (const raw of input.residents) {
-    const parsed = parseResident(raw);
+    const parsed = parseResident(raw, role);
     if ("error" in parsed) return { ok: false, error: parsed.error };
     residents.push(parsed);
   }
 
-  const { id } = await createHousehold({ name, tentId: input.tentId, residents });
+  const household = await createHousehold({
+    name,
+    tentId: input.tentId,
+    residents,
+  });
 
   revalidatePath("/tents");
   revalidatePath("/");
-  return { ok: true, id };
+  return {
+    ok: true,
+    id: household.id,
+    qrSvg: await qrSvg(household.qrPayload),
+    fallbackCode: household.fallbackCode,
+  };
 }
 
 export async function addResidentToHousehold(
   householdId: string,
   input: ResidentInput,
-): Promise<RegisterResult> {
+): Promise<AddResidentResult> {
   if ((await deviceRole()) !== "VOLUNTEER") {
     return { ok: false, error: "Registrasi khusus perangkat Volunteer" };
   }
@@ -92,7 +109,7 @@ export async function addResidentToHousehold(
     return { ok: false, error: "Household tidak ditemukan" };
   }
 
-  const parsed = parseResident(input);
+  const parsed = parseResident(input, "VOLUNTEER");
   if ("error" in parsed) return { ok: false, error: parsed.error };
 
   await addResident(householdId, parsed);

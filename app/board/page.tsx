@@ -13,7 +13,7 @@ const KITCHEN = [
 ];
 
 const INFO = [
-  "Setiap keluarga didaftarkan oleh Relawan dan menerima satu Dompet Gizi (kartu QR).",
+  "Setiap Household dapat mendaftar sendiri atau dibantu Relawan, lalu menerima satu Dompet Gizi (kartu QR).",
   "Bawa Dompet Gizi saat mengambil ransum di tenda Anda. Cukup satu kali per periode.",
   "Kartu basah atau robek? Sebutkan kode ketik pada kartu ke Relawan — Anda tetap dilayani.",
   "Merasa tidak enak badan? Sampaikan ke Relawan terdekat; keluhan dicatat dan diprioritaskan.",

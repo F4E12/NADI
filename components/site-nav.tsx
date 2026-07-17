@@ -36,7 +36,9 @@ function BrandMark() {
 export function SiteNav({ role }: { role: DeviceRole }) {
   const pathname = usePathname();
   const isVolunteer = role === "VOLUNTEER";
-  const primary = isVolunteer ? PRIMARY : PRIMARY.slice(0, 1);
+  const primary = isVolunteer
+    ? PRIMARY
+    : PRIMARY.filter((item) => ["/board", "/register"].includes(item.href));
   const more = isVolunteer
     ? MORE
     : MORE.filter((item) => ["/heat", "/presence", "/complaints"].includes(item.href));
@@ -74,8 +76,8 @@ export function SiteNav({ role }: { role: DeviceRole }) {
         <span><i /> Lokal aktif</span>
       </div>
 
-      <Link href={isVolunteer ? "/register" : "/complaints"} className="nadi-nav-action">
-        {isVolunteer ? "Catat warga" : "Lapor kebutuhan"}
+      <Link href="/register" className="nadi-nav-action">
+        {isVolunteer ? "Catat warga" : "Daftar Household"}
         <span aria-hidden="true">↗</span>
       </Link>
 

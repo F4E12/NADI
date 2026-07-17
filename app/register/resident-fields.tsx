@@ -51,12 +51,14 @@ export function ResidentFields({
   onChange,
   onRemove,
   removable,
+  showHealthStatus = true,
 }: {
   value: ResidentDraft;
   index: number;
   onChange: (next: ResidentDraft) => void;
   onRemove: () => void;
   removable: boolean;
+  showHealthStatus?: boolean;
 }) {
   const set = <K extends keyof ResidentDraft>(key: K, v: ResidentDraft[K]) =>
     onChange({ ...value, [key]: v });
@@ -115,20 +117,22 @@ export function ResidentFields({
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-graphite">Status kesehatan</span>
-          <select
-            className={inputClass}
-            value={value.healthStatus}
-            onChange={(e) => set("healthStatus", e.target.value as HealthStatus)}
-          >
-            {(Object.keys(HEALTH_LABELS) as HealthStatus[]).map((s) => (
-              <option key={s} value={s}>
-                {HEALTH_LABELS[s]}
-              </option>
-            ))}
-          </select>
-        </label>
+        {showHealthStatus && (
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-graphite">Status kesehatan</span>
+            <select
+              className={inputClass}
+              value={value.healthStatus}
+              onChange={(e) => set("healthStatus", e.target.value as HealthStatus)}
+            >
+              {(Object.keys(HEALTH_LABELS) as HealthStatus[]).map((s) => (
+                <option key={s} value={s}>
+                  {HEALTH_LABELS[s]}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
           <span className="text-graphite">

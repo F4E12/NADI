@@ -67,7 +67,7 @@ export type ResidentDetail = {
   age: number;
   nik: string | null;
   isPregnant: boolean;
-  healthStatus: string;
+  healthStatus: HealthStatus;
   chronicConditions: string[];
   entitlement: Entitlement;
 };
@@ -82,6 +82,44 @@ export type HouseholdDetail = {
   residents: ResidentDetail[];
   entitlement: Entitlement;
 };
+
+export type HouseholdResidentRoster = {
+  name: string;
+  residents: {
+    id: string;
+    name: string;
+    healthStatus: HealthStatus;
+  }[];
+};
+
+export async function getHouseholdResidentRoster(
+  id: string,
+): Promise<HouseholdResidentRoster | null> {
+  const household = await prisma.household.findUnique({
+    where: { id },
+    select: {
+      name: true,
+      residents: {
+        orderBy: { age: "desc" },
+        select: {
+          id: true,
+          name: true,
+          healthStatus: true,
+        },
+      },
+    },
+  });
+
+  if (!household) return null;
+
+  return {
+    name: household.name,
+    residents: household.residents.map((resident) => ({
+      ...resident,
+      healthStatus: resident.healthStatus as HealthStatus,
+    })),
+  };
+}
 
 export async function getHousehold(id: string): Promise<HouseholdDetail | null> {
   const household = await prisma.household.findUnique({
@@ -116,7 +154,7 @@ export async function getHousehold(id: string): Promise<HouseholdDetail | null> 
     age: r.age,
     nik: r.nik,
     isPregnant: r.isPregnant,
-    healthStatus: r.healthStatus,
+    healthStatus: r.healthStatus as HealthStatus,
     chronicConditions: r.chronicConditions.map((c) => c.name),
     entitlement: residentEntitlement(r),
   }));
@@ -150,7 +188,7 @@ function isUniqueViolation(error: unknown): boolean {
 
 export async function createHousehold(
   input: CreateHouseholdInput,
-): Promise<{ id: string }> {
+): Promise<{ id: string; qrPayload: string; fallbackCode: string }> {
   for (let attempt = 0; attempt < 5; attempt++) {
     const dompet = issueDompetGizi();
     try {
@@ -165,7 +203,7 @@ export async function createHousehold(
             create: input.residents.map(residentCreateData),
           },
         },
-        select: { id: true },
+        select: { id: true, qrPayload: true, fallbackCode: true },
       });
       return created;
     } catch (error) {
