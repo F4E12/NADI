@@ -2,6 +2,7 @@ const RESIDENT_PREFIXES = [
   "/board",
   "/heat",
   "/presence",
+  "/households",
   "/complaints",
   "/register",
   "/volunteer-only",
