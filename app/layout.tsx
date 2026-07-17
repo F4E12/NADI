@@ -1,69 +1,28 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
+import { ProductMotion } from "@/components/product-motion";
+import { SiteNav } from "@/components/site-nav";
+import { deviceRole } from "@/lib/device-role";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Posko Hub",
-  description: "The operational record for a single evacuation post — offline.",
+  title: "NADI | Operasi Posko, tetap hidup",
+  description: "Record operasional lokal untuk satu Posko. Warga, tenda, gizi, stok, dan keluhan tetap bergerak tanpa internet.",
 };
 
-const NAV = [
-  { href: "/", label: "Beranda" },
-  { href: "/join", label: "Gabung" },
-  { href: "/board", label: "Papan Warga" },
-  { href: "/heat", label: "Heat" },
-  { href: "/register", label: "Registrasi" },
-  { href: "/tents", label: "Tenda" },
-  { href: "/inventory", label: "Inventaris" },
-  { href: "/allocate", label: "Alokasi" },
-  { href: "/distribute", label: "Distribusi" },
-  { href: "/presence", label: "Presence" },
-  { href: "/complaints", label: "Keluhan" },
-  { href: "/allocation-check", label: "Cek Alokasi" },
-  { href: "/face-scan", label: "Face Scan" },
-];
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const role = await deviceRole();
   return (
-    <html
-      lang="id"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-        <header className="border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80">
-          <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-3">
-            <Link href="/" className="text-sm font-semibold tracking-tight">
-              Posko&nbsp;Hub
-            </Link>
-            <nav className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-zinc-600 dark:text-zinc-400">
-              {NAV.slice(1).map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="hover:text-zinc-900 dark:hover:text-zinc-100"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+    <html lang="id" className="h-full antialiased" data-scroll-behavior="smooth">
+      <body className="flex min-h-full flex-col bg-paper-white text-carbon">
+        <SiteNav role={role} />
+        <main className="mx-auto w-full max-w-[1200px] flex-1 px-6">{children}</main>
+        <ProductMotion />
+        <footer className="border-t border-fog">
+          <div className="mx-auto grid max-w-[1200px] gap-4 px-6 py-8 text-caption text-ash sm:grid-cols-[1fr_auto] sm:items-end">
+            <div><strong className="mb-1 block text-carbon">NADI</strong><span>Catatan operasional satu Posko, tanpa internet.</span></div>
+            <span className="tabular-nums">Lokal · v0.1</span>
           </div>
-        </header>
-        <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">{children}</main>
+        </footer>
       </body>
     </html>
   );

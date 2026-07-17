@@ -9,7 +9,13 @@ import { confirmComplaintAction, resolveComplaintAction } from "./actions";
 
 const PRIORITIES: PriorityLevel[] = ["MERAH", "KUNING", "HIJAU"];
 
-export function ComplaintRow({ complaint }: { complaint: OpenComplaint }) {
+export function ComplaintRow({
+  complaint,
+  canConfirm,
+}: {
+  complaint: OpenComplaint;
+  canConfirm: boolean;
+}) {
   const router = useRouter();
   const [priority, setPriority] = useState<PriorityLevel>(
     complaint.confirmedPriority ?? complaint.suggestedPriority,
@@ -46,15 +52,16 @@ export function ComplaintRow({ complaint }: { complaint: OpenComplaint }) {
         <div className="min-w-0">
           <p className="font-medium">
             {complaint.residentName}{" "}
-            <span className="text-sm font-normal text-zinc-500">
+            <span className="text-sm font-normal text-ash">
               · Keluarga {complaint.householdName} · {complaint.tentName}
             </span>
           </p>
-          <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-0.5 text-sm text-graphite">
             {complaint.symptoms.join(", ") || "—"}
           </p>
-          <p className="mt-0.5 text-xs text-zinc-400">
+          <p className="mt-0.5 text-xs text-ash">
             {formatDateTime(complaint.createdAt)}
+            {complaint.source === "SELF" && " · dilaporkan sendiri"}
           </p>
         </div>
         <span
@@ -65,28 +72,34 @@ export function ComplaintRow({ complaint }: { complaint: OpenComplaint }) {
         </span>
       </div>
 
-      {confirmed ? (
+      {!canConfirm ? (
+        <span className="text-xs text-ash">
+          {confirmed
+            ? `Dikonfirmasi oleh ${complaint.confirmedBy}`
+            : "Menunggu konfirmasi Volunteer"}
+        </span>
+      ) : confirmed ? (
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-xs text-zinc-500">
+          <span className="text-xs text-ash">
             Dikonfirmasi oleh {complaint.confirmedBy}
           </span>
           <button
             type="button"
             onClick={resolve}
             disabled={pending}
-            className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm hover:border-zinc-500 disabled:opacity-50 dark:border-zinc-700"
+            className="rounded-lg border border-fog px-3 py-1.5 text-sm hover:border-ash disabled:opacity-50"
           >
             Selesaikan
           </button>
         </div>
       ) : (
         <div className="flex flex-wrap items-end gap-2">
-          <label className="flex flex-col gap-1 text-xs text-zinc-500">
+          <label className="flex flex-col gap-1 text-xs text-ash">
             Priority (konfirmasi / ubah)
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value as PriorityLevel)}
-              className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+              className="rounded-lg border border-fog bg-white px-3 py-1.5 text-sm outline-none focus:border-lavender"
             >
               {PRIORITIES.map((p) => (
                 <option key={p} value={p}>
@@ -99,13 +112,13 @@ export function ComplaintRow({ complaint }: { complaint: OpenComplaint }) {
             value={actor}
             onChange={(e) => setActor(e.target.value)}
             placeholder="Dikonfirmasi oleh"
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+            className="rounded-lg border border-fog bg-white px-3 py-1.5 text-sm outline-none focus:border-lavender"
           />
           <button
             type="button"
             onClick={confirm}
             disabled={pending}
-            className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+            className="rounded-lg bg-lavender px-3 py-1.5 text-sm font-medium text-white hover:bg-iris disabled:opacity-50"
           >
             Konfirmasi
           </button>
@@ -113,14 +126,14 @@ export function ComplaintRow({ complaint }: { complaint: OpenComplaint }) {
             type="button"
             onClick={resolve}
             disabled={pending}
-            className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm hover:border-zinc-500 disabled:opacity-50 dark:border-zinc-700"
+            className="rounded-lg border border-fog px-3 py-1.5 text-sm hover:border-ash disabled:opacity-50"
           >
             Selesaikan
           </button>
         </div>
       )}
 
-      {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </li>
   );
 }

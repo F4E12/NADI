@@ -89,32 +89,32 @@ export function QrScanner({ onDetect }: { onDetect: (text: string) => void }) {
       <button
         type="button"
         onClick={toggle}
-        className="self-start rounded-lg border border-zinc-300 px-3 py-2 text-sm hover:border-zinc-500 dark:border-zinc-700"
+        className="self-start rounded-lg border border-fog px-3 py-2 text-sm hover:border-ash"
       >
         {live ? "Tutup kamera" : "Pindai QR dengan kamera"}
       </button>
 
       {live && (
-        <div className="relative aspect-video max-w-sm overflow-hidden rounded-xl border border-zinc-300 bg-zinc-900 dark:border-zinc-700">
+        <div className="relative aspect-video max-w-sm overflow-hidden rounded-xl border border-fog bg-carbon">
           <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
           <span className="absolute inset-x-6 top-1/2 h-px -translate-y-1/2 bg-green-400/70" />
         </div>
       )}
 
       {state === "unsupported" && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-ash">
           Peramban ini tidak mendukung pemindai QR bawaan. Ketik kode Dompet Gizi
           di bawah.
         </p>
       )}
       {state === "insecure" && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-ash">
           Kamera hanya aktif di stasiun laptop pada <span className="font-mono">localhost</span>{" "}
           (ADR-0003). Ketik kode di bawah.
         </p>
       )}
       {state === "blocked" && (
-        <p className="text-xs text-zinc-500">Akses kamera ditolak. Ketik kode di bawah.</p>
+        <p className="text-xs text-ash">Akses kamera ditolak. Ketik kode di bawah.</p>
       )}
     </div>
   );

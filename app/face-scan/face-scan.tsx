@@ -71,7 +71,7 @@ export function FaceScan() {
   return (
     <div className="grid gap-6 md:grid-cols-2">
       <div className="flex flex-col gap-3">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-zinc-300 bg-zinc-900 dark:border-zinc-700">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-fog bg-carbon">
           <video
             ref={videoRef}
             autoPlay
@@ -85,7 +85,7 @@ export function FaceScan() {
           </span>
 
           {camera !== "live" && (
-            <div className="absolute inset-0 flex items-center justify-center bg-zinc-900/90 p-6 text-center text-sm text-zinc-300">
+            <div className="absolute inset-0 flex items-center justify-center bg-carbon/90 p-6 text-center text-sm text-fog">
               {camera === "starting" && "Meminta akses kamera…"}
               {camera === "blocked" &&
                 "Akses kamera ditolak. Izinkan kamera di stasiun laptop untuk melihat pratinjau."}
@@ -105,36 +105,36 @@ export function FaceScan() {
           type="button"
           onClick={runSimulation}
           disabled={pending}
-          className="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          className="rounded-lg bg-lavender px-4 py-2.5 text-sm font-medium text-white hover:bg-iris disabled:opacity-50"
         >
           {pending ? "Menyimulasikan…" : "Simulasikan kecocokan"}
         </button>
       </div>
 
       <div className="flex flex-col gap-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-ash">
           Hasil (disimulasikan)
         </h2>
         {match ? (
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-xl border border-fog bg-white p-5">
             <p className="text-lg font-semibold">{match.residentName}</p>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-ash">
               {match.age} th · Keluarga {match.householdName} · {match.tentName}
             </p>
-            <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+            <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
               Ini bukan identifikasi. Resident dipilih acak dari data seed untuk
               memperagakan antarmuka. Verifikasi identitas sebenarnya lewat Dompet
               Gizi.
             </p>
             <Link
               href={`/households/${match.householdId}`}
-              className="mt-3 inline-flex text-sm font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
+              className="mt-3 inline-flex text-sm font-medium text-carbon underline underline-offset-4"
             >
               Buka Household →
             </Link>
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-zinc-300 p-5 text-sm text-zinc-500 dark:border-zinc-700">
+          <div className="rounded-xl border border-dashed border-fog p-5 text-sm text-ash">
             Belum ada. Tekan &ldquo;Simulasikan kecocokan&rdquo; untuk melihat
             perilaku antarmuka.
           </div>

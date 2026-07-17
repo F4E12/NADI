@@ -43,7 +43,7 @@ const HEALTH_LABELS: Record<HealthStatus, string> = {
 };
 
 const inputClass =
-  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900";
+  "w-full rounded-lg border border-fog bg-white px-3 py-2 text-sm outline-none focus:border-lavender";
 
 export function ResidentFields({
   value,
@@ -62,16 +62,16 @@ export function ResidentFields({
     onChange({ ...value, [key]: v });
 
   return (
-    <fieldset className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <fieldset className="rounded-xl border border-fog bg-white p-4">
       <div className="mb-3 flex items-center justify-between">
-        <legend className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+        <legend className="text-xs font-semibold uppercase tracking-wide text-ash">
           Resident {index + 1}
         </legend>
         {removable && (
           <button
             type="button"
             onClick={onRemove}
-            className="text-xs text-zinc-500 hover:text-red-600"
+            className="text-xs text-ash hover:text-red-600"
           >
             Hapus
           </button>
@@ -80,7 +80,7 @@ export function ResidentFields({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-600 dark:text-zinc-400">Nama</span>
+          <span className="text-graphite">Nama</span>
           <input
             className={inputClass}
             value={value.name}
@@ -90,7 +90,7 @@ export function ResidentFields({
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-600 dark:text-zinc-400">Umur (tahun)</span>
+          <span className="text-graphite">Umur (tahun)</span>
           <input
             className={inputClass}
             type="number"
@@ -103,8 +103,8 @@ export function ResidentFields({
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-600 dark:text-zinc-400">
-            NIK <span className="text-zinc-400">(opsional, hanya tampilan)</span>
+          <span className="text-graphite">
+            NIK <span className="text-ash">(opsional, hanya tampilan)</span>
           </span>
           <input
             className={inputClass}
@@ -116,7 +116,7 @@ export function ResidentFields({
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-600 dark:text-zinc-400">Status kesehatan</span>
+          <span className="text-graphite">Status kesehatan</span>
           <select
             className={inputClass}
             value={value.healthStatus}
@@ -131,9 +131,9 @@ export function ResidentFields({
         </label>
 
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-          <span className="text-zinc-600 dark:text-zinc-400">
+          <span className="text-graphite">
             Kondisi kronis{" "}
-            <span className="text-zinc-400">(pisahkan dengan koma)</span>
+            <span className="text-ash">(pisahkan dengan koma)</span>
           </span>
           <input
             className={inputClass}
@@ -150,7 +150,7 @@ export function ResidentFields({
             onChange={(e) => set("isPregnant", e.target.checked)}
             className="h-4 w-4"
           />
-          <span className="text-zinc-600 dark:text-zinc-400">
+          <span className="text-graphite">
             Sedang hamil (menambah kebutuhan gizi & membuka stok tinggi protein
             untuk Tenda)
           </span>

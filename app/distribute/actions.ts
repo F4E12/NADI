@@ -7,6 +7,7 @@ import {
   resolveHousehold,
   type DistributionContext,
 } from "@/lib/data/distribution";
+import { deviceRole } from "@/lib/device-role";
 
 export type LookupResult =
   | { ok: true; context: DistributionContext }
@@ -32,6 +33,9 @@ export async function recordDistributionAction(input: {
   quantity: string;
   actor: string;
 }): Promise<RecordResult> {
+  if ((await deviceRole()) !== "VOLUNTEER") {
+    return { ok: false, error: "Distribusi khusus perangkat Volunteer", context: null };
+  }
   const quantity = Number(input.quantity);
   if (!Number.isFinite(quantity) || quantity <= 0) {
     return {
@@ -72,6 +76,9 @@ export async function recordDistributionBatch(input: {
   actor: string;
   items: Array<{ inventoryId: string; quantity: string }>;
 }): Promise<BatchRecordResult> {
+  if ((await deviceRole()) !== "VOLUNTEER") {
+    return { ok: false, error: "Distribusi khusus perangkat Volunteer", context: null };
+  }
   const quantities = input.items
     .map((item) => ({ inventoryId: item.inventoryId, quantity: Number(item.quantity) }))
     .filter((item) => item.inventoryId && Number.isFinite(item.quantity) && item.quantity > 0);

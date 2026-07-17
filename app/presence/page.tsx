@@ -14,10 +14,10 @@ export default async function PresencePage({
   const results = query ? await searchPresence(query) : [];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="nadi-product-page flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Presence</h1>
-        <p className="mt-1 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 max-w-2xl text-sm text-graphite">
           Cari sebuah Household dan lihat kapan terakhir terlihat. Presence adalah
           klaim tingkat <strong>Household</strong> — bukti bahwa{" "}
           <em>seseorang dari Household ini</em> berada di suatu tempat pada suatu
@@ -32,11 +32,11 @@ export default async function PresencePage({
           defaultValue={query}
           autoFocus
           placeholder="Nama keluarga, ID Household, NIK, atau nama Resident…"
-          className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+          className="flex-1 rounded-lg border border-fog bg-white px-3 py-2 text-sm outline-none focus:border-lavender"
         />
         <button
           type="submit"
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          className="rounded-lg bg-lavender px-4 py-2 text-sm font-medium text-white hover:bg-iris"
         >
           Cari
         </button>
@@ -44,14 +44,14 @@ export default async function PresencePage({
 
       {query && (
         <section className="flex flex-col gap-3">
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-ash">
             {results.length === 0
               ? `Tidak ada Household yang cocok dengan “${query}”.`
               : `${results.length} Household cocok.`}
           </p>
 
           {results.length > 0 && (
-            <ul className="divide-y divide-zinc-200 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
+            <ul className="divide-y divide-fog overflow-hidden rounded-xl border border-fog bg-white">
               {results.map((h) => (
                 <li key={h.id} className="flex flex-wrap items-center justify-between gap-4 px-4 py-3">
                   <span className="flex flex-col">
@@ -61,23 +61,23 @@ export default async function PresencePage({
                     >
                       Keluarga {h.name}
                     </Link>
-                    <span className="font-mono text-xs text-zinc-500">
+                    <span className="font-mono text-xs text-ash">
                       {h.id} · {h.residentCount} anggota · terdaftar di {h.homeTent}
                     </span>
                   </span>
                   <span className="text-right text-sm">
                     {h.presence ? (
                       <>
-                        <span className="font-medium text-green-700 dark:text-green-300">
+                        <span className="font-medium text-green-700">
                           Terlihat di {h.presence.tentName}
                         </span>
                         <br />
-                        <span className="text-xs text-zinc-500">
+                        <span className="text-xs text-ash">
                           {formatDateTime(h.presence.at)} · tingkat Household
                         </span>
                       </>
                     ) : (
-                      <span className="text-xs text-zinc-400">
+                      <span className="text-xs text-ash">
                         Belum terlihat — belum ada pemindaian Dompet Gizi
                       </span>
                     )}
@@ -89,7 +89,7 @@ export default async function PresencePage({
         </section>
       )}
 
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-ash">
         Presence diturunkan dari Transaction Log — tanpa langkah pencatatan
         terpisah. Tidak ada Proof of Life perorangan di mana pun sistem ini.
       </p>

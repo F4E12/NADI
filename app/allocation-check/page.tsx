@@ -14,10 +14,10 @@ export default async function AllocationCheckPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="nadi-product-page flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Cek Alokasi</h1>
-        <p className="mt-1 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 max-w-2xl text-sm text-graphite">
           Kunci alokasi menyala pada langkah Inventory → Tenda, digerbang oleh
           komposisi Tenda yang digulung dari Household-nya. Stok tinggi protein
           ditolak untuk Tenda tanpa balita dan tanpa ibu hamil — dan menyebutkan

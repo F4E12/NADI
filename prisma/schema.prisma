@@ -117,6 +117,7 @@ model Complaint {
   id                String    @id @default(cuid())
   freeText          String
   symptoms          String
+  source            String    @default("VOLUNTEER")
   suggestedPriority String
   confirmedPriority String?
   confirmedBy       String?

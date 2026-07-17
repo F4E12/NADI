@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { applyAllocation, buildAutoAllocationPlan } from "@/lib/data/allocations";
+import { deviceRole } from "@/lib/device-role";
 
 export type AllocateResult =
   | { ok: true }
@@ -13,6 +14,9 @@ export async function allocateStock(input: {
   quantity: string;
   actor: string;
 }): Promise<AllocateResult> {
+  if ((await deviceRole()) !== "VOLUNTEER") {
+    return { ok: false, error: "Alokasi khusus perangkat Volunteer" };
+  }
   const quantity = Number(input.quantity);
   if (!Number.isFinite(quantity) || quantity <= 0) {
     return { ok: false, error: "Jumlah harus lebih dari nol" };
@@ -41,6 +45,9 @@ export async function autoAllocateStock(input: {
   tentId: string;
   actor: string;
 }): Promise<AutoAllocateResult> {
+  if ((await deviceRole()) !== "VOLUNTEER") {
+    return { ok: false, error: "Alokasi khusus perangkat Volunteer" };
+  }
   const actor = input.actor.trim() || "Koordinator";
   const planBundle = await buildAutoAllocationPlan(input.tentId);
   if (!planBundle) return { ok: false, error: "Tenda tidak ditemukan" };
@@ -76,6 +83,9 @@ export async function allocateStockBatch(input: {
   actor: string;
   items: Array<{ inventoryId: string; quantity: string }>;
 }): Promise<BatchAllocateResult> {
+  if ((await deviceRole()) !== "VOLUNTEER") {
+    return { ok: false, error: "Alokasi khusus perangkat Volunteer" };
+  }
   const actor = input.actor.trim() || "Koordinator";
   const items = input.items
     .map((item) => ({ inventoryId: item.inventoryId, quantity: Number(item.quantity) }))

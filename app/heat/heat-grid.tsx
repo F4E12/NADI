@@ -17,7 +17,7 @@ const COLUMNS: Array<{ key: HeatCellKey; label: string }> = [
 
 const LEVEL_BG = [
   "var(--color-mist)",
-  "color-mix(in oklab, var(--color-ember) 45%, white)",
+  "color-mix(in oklab, var(--color-ember) 45%, var(--color-paper-white))",
   "var(--color-ember)",
   "var(--color-ember-deep)",
 ] as const;

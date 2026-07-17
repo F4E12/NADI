@@ -20,10 +20,10 @@ export default async function JoinPage() {
   const wifiQr = await qrSvg(wifiQrValue(WIFI_SSID, WIFI_PASSWORD));
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="nadi-product-page flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Gabung ke Posko</h1>
-        <p className="mt-1 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 max-w-2xl text-sm text-graphite">
           Pindai kode dari telepon untuk membuka sistem Posko. Tanpa pemasangan,
           tanpa internet — telepon hanya perlu berada di Wi-Fi yang sama dengan
           laptop ini.
@@ -31,7 +31,7 @@ export default async function JoinPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-[260px_1fr]">
-        <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="rounded-xl border border-fog bg-white p-5">
           <div
             className="mx-auto h-52 w-52 [&>svg]:h-full [&>svg]:w-full"
             aria-label={`Kode QR untuk Wi-Fi ${WIFI_SSID}`}
@@ -40,27 +40,27 @@ export default async function JoinPage() {
           <p className="mt-4 text-center font-mono text-sm font-semibold">
             {WIFI_SSID}
           </p>
-          <p className="mt-1 text-center text-xs text-zinc-500">
+          <p className="mt-1 text-center text-xs text-ash">
             Pindai untuk tersambung ke Wi-Fi Posko
           </p>
         </div>
 
         {url && qr ? (
           <>
-            <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="rounded-xl border border-fog bg-white p-5">
               <div
                 className="mx-auto h-52 w-52 [&>svg]:h-full [&>svg]:w-full"
                 aria-label={`Kode QR untuk ${url}`}
                 dangerouslySetInnerHTML={{ __html: qr }}
               />
               <p className="mt-4 text-center font-mono text-sm font-semibold">{url}</p>
-              <p className="mt-1 text-center text-xs text-zinc-500">
+              <p className="mt-1 text-center text-xs text-ash">
                 via {primary?.iface}
               </p>
             </div>
 
             <div className="flex flex-col gap-4 md:col-span-2">
-              <ol className="flex flex-col gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+              <ol className="flex flex-col gap-2 text-sm text-graphite">
                 <Step n={1}>
                   Buka aplikasi kamera bawaan dan arahkan ke kode QR Wi-Fi
                   (kiri), lalu ketuk untuk tersambung.
@@ -75,7 +75,7 @@ export default async function JoinPage() {
                 </Step>
               </ol>
 
-              <p className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+              <p className="rounded-lg border border-fog bg-linen px-3 py-2 text-xs text-graphite">
                 Kamera telepon memindai QR lewat aplikasi kamera OS — tidak terkena
                 batasan konteks aman. Beberapa telepon bisa terhubung ke laptop yang
                 sama dan bekerja pada satu record yang sama.
@@ -83,10 +83,10 @@ export default async function JoinPage() {
 
               {addresses.length > 1 && (
                 <div className="text-sm">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-ash">
                     Alamat lain di laptop ini
                   </p>
-                  <ul className="mt-1 font-mono text-xs text-zinc-500">
+                  <ul className="mt-1 font-mono text-xs text-ash">
                     {addresses.slice(1).map((a) => (
                       <li key={`${a.iface}-${a.ip}`}>
                         {siteUrl(a.ip, port)} — {a.iface}
@@ -99,7 +99,7 @@ export default async function JoinPage() {
             </div>
           </>
         ) : (
-          <div className="rounded-xl border border-amber-400 bg-amber-50 p-5 text-sm text-amber-800 dark:border-amber-600 dark:bg-amber-950 dark:text-amber-200 md:col-span-1">
+          <div className="rounded-xl border border-amber-400 bg-amber-50 p-5 text-sm text-amber-800 md:col-span-1">
             <p className="font-semibold">Laptop belum tersambung ke jaringan lokal.</p>
             <p className="mt-1">
               Sambungkan laptop ke Wi-Fi atau hotspot Posko, lalu muat ulang halaman
@@ -110,7 +110,7 @@ export default async function JoinPage() {
         )}
       </div>
 
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-ash">
         Entri lewat QR, bukan captive portal (ADR-0002). Tidak ada DNS spoofing.
       </p>
     </div>
@@ -120,7 +120,7 @@ export default async function JoinPage() {
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
     <li className="flex gap-3">
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-lavender text-xs font-semibold text-white">
         {n}
       </span>
       <span className="pt-0.5">{children}</span>

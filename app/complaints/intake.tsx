@@ -82,16 +82,16 @@ export function ComplaintIntake() {
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+    <section className="flex flex-col gap-4 rounded-xl border border-fog bg-white p-5">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-ash">
         Ajukan keluhan
       </h2>
 
       {selected ? (
-        <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-800">
+        <div className="flex items-center justify-between rounded-lg border border-fog px-3 py-2 text-sm">
           <span>
             <span className="font-medium">{selected.name}</span>{" "}
-            <span className="text-zinc-500">
+            <span className="text-ash">
               · {selected.age} th · Keluarga {selected.householdName} ·{" "}
               {selected.tentName}
             </span>
@@ -99,7 +99,7 @@ export function ComplaintIntake() {
           <button
             type="button"
             onClick={() => setSelected(null)}
-            className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+            className="text-xs text-ash hover:text-carbon"
           >
             Ganti
           </button>
@@ -114,7 +114,7 @@ export function ComplaintIntake() {
             className="flex gap-2"
           >
             <input
-              className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+              className="flex-1 rounded-lg border border-fog bg-white px-3 py-2 text-sm outline-none focus:border-lavender"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Cari Resident: nama, NIK, atau ID Household"
@@ -122,13 +122,13 @@ export function ComplaintIntake() {
             <button
               type="submit"
               disabled={pending}
-              className="rounded-lg border border-zinc-300 px-4 py-2 text-sm hover:border-zinc-500 disabled:opacity-50 dark:border-zinc-700"
+              className="rounded-lg border border-fog px-4 py-2 text-sm hover:border-ash disabled:opacity-50"
             >
               Cari
             </button>
           </form>
           {results.length > 0 && (
-            <ul className="max-h-48 divide-y divide-zinc-200 overflow-y-auto rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+            <ul className="max-h-48 divide-y divide-fog overflow-y-auto rounded-lg border border-fog">
               {results.map((r) => (
                 <li key={r.id}>
                   <button
@@ -138,13 +138,13 @@ export function ComplaintIntake() {
                       setResults([]);
                       setQuery("");
                     }}
-                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-linen"
                   >
                     <span>
                       {r.name}{" "}
-                      <span className="text-zinc-500">· {r.age} th</span>
+                      <span className="text-ash">· {r.age} th</span>
                     </span>
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-ash">
                       {r.householdName} · {r.tentName}
                     </span>
                   </button>
@@ -156,11 +156,11 @@ export function ComplaintIntake() {
       )}
 
       <div className="flex flex-col gap-2">
-        <label className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+        <label className="text-xs font-medium uppercase tracking-wide text-ash">
           Teks bebas (opsional) — ketik apa yang Anda dengar
         </label>
         <textarea
-          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+          className="w-full rounded-lg border border-fog bg-white px-3 py-2 text-sm outline-none focus:border-lavender"
           rows={2}
           value={freeText}
           onChange={(e) => setFreeText(e.target.value)}
@@ -171,11 +171,11 @@ export function ComplaintIntake() {
             type="button"
             onClick={extract}
             disabled={pending || !freeText.trim()}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm hover:border-zinc-500 disabled:opacity-50 dark:border-zinc-700"
+            className="rounded-lg border border-fog px-3 py-2 text-sm hover:border-ash disabled:opacity-50"
           >
             Ekstrak gejala
           </button>
-          {source && <span className="text-xs text-zinc-500">{source}</span>}
+          {source && <span className="text-xs text-ash">{source}</span>}
         </div>
       </div>
 
@@ -190,7 +190,7 @@ export function ComplaintIntake() {
               className={`rounded-full border px-3 py-1 text-sm ${
                 on
                   ? `${TONE_BADGE[priorityTone(s.level)]} border-transparent`
-                  : "border-zinc-300 text-zinc-600 hover:border-zinc-500 dark:border-zinc-700 dark:text-zinc-400"
+                  : "border-fog text-graphite hover:border-ash"
               }`}
             >
               {s.label}
@@ -200,24 +200,24 @@ export function ComplaintIntake() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm text-zinc-500">Saran Priority (rules):</span>
+        <span className="text-sm text-ash">Saran Priority (rules):</span>
         <span
           className={`rounded-full px-3 py-1 text-sm font-medium ${TONE_BADGE[priorityTone(suggested)]}`}
         >
           {priorityLabel(suggested)}
         </span>
-        <span className="text-xs text-zinc-400">
+        <span className="text-xs text-ash">
           bukan diagnosis — hanya urutan perhatian; dikonfirmasi manusia
         </span>
       </div>
 
       {error && (
-        <p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+        <p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
       )}
       {message && (
-        <p className="rounded-lg border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300">
+        <p className="rounded-lg border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-700">
           {message}
         </p>
       )}
@@ -226,7 +226,7 @@ export function ComplaintIntake() {
         type="button"
         onClick={submit}
         disabled={pending || !selected || symptoms.length === 0}
-        className="self-start rounded-lg bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        className="self-start rounded-lg bg-lavender px-5 py-2.5 text-sm font-medium text-white hover:bg-iris disabled:opacity-50"
       >
         {pending ? "Mengajukan…" : "Ajukan keluhan"}
       </button>

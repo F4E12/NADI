@@ -8,6 +8,7 @@ import {
   type HealthStatus,
   type NewResident,
 } from "@/lib/data/households";
+import { deviceRole } from "@/lib/device-role";
 
 export type ResidentInput = {
   name: string;
@@ -56,6 +57,9 @@ export async function registerHousehold(input: {
   tentId: string;
   residents: ResidentInput[];
 }): Promise<RegisterResult> {
+  if ((await deviceRole()) !== "VOLUNTEER") {
+    return { ok: false, error: "Registrasi khusus perangkat Volunteer" };
+  }
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Household harus punya nama keluarga" };
   if (!input.tentId) return { ok: false, error: "Pilih Tenda untuk Household ini" };
@@ -81,6 +85,9 @@ export async function addResidentToHousehold(
   householdId: string,
   input: ResidentInput,
 ): Promise<RegisterResult> {
+  if ((await deviceRole()) !== "VOLUNTEER") {
+    return { ok: false, error: "Registrasi khusus perangkat Volunteer" };
+  }
   if (!(await householdExists(householdId))) {
     return { ok: false, error: "Household tidak ditemukan" };
   }

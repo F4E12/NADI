@@ -7,7 +7,7 @@ export default async function HeatPage() {
   const tents = await listTentHeat();
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="nadi-product-page flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Peta Heat</h1>
         <p className="mt-1 max-w-2xl text-sm text-graphite">

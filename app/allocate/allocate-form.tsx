@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import {
   suggestTentAllocationPlan,
   type TentComposition,
@@ -9,7 +9,7 @@ import type { InventoryPoolItem } from "@/lib/data/allocations";
 import { allocateStockBatch } from "./actions";
 
 const inputClass =
-  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900";
+  "w-full rounded-lg border border-fog bg-white px-3 py-2 text-sm outline-none focus:border-lavender";
 
 export function AllocateForm({
   tentId,
@@ -27,7 +27,10 @@ export function AllocateForm({
   allocatedKcal: number;
 }) {
   const [actor, setActor] = useState("Koordinator");
-  const [quantities, setQuantities] = useState<Record<string, string>>({});
+  const [quantityEdits, setQuantityEdits] = useState<{
+    tentId: string;
+    values: Record<string, string>;
+  }>({ tentId, values: {} });
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -49,7 +52,7 @@ export function AllocateForm({
         })),
         tent: composition,
       }),
-    [allocatedKcal, composition, pool, requirementKcalPerDay],
+    [allocatedKcal, composition, pool, requirementKcalPerDay, tentPopulation],
   );
 
   const plannedKcal = useMemo(
@@ -76,21 +79,26 @@ export function AllocateForm({
 
   const visibleRows = rows.filter((row) => row.available > 0 || row.suggestedQuantity > 0);
 
-  const visibleRowsSignature = useMemo(
+  const defaultQuantities = useMemo(
     () =>
-      visibleRows
-        .map((row) => `${row.id}:${row.suggestedQuantity}:${row.available}`)
-        .join("|"),
+      Object.fromEntries(
+        visibleRows.map((row) => [
+          row.id,
+          row.suggestedQuantity > 0 ? String(row.suggestedQuantity) : "",
+        ]),
+      ),
     [visibleRows],
   );
 
-  useEffect(() => {
-    setQuantities(
-      Object.fromEntries(
-        visibleRows.map((row) => [row.id, row.suggestedQuantity > 0 ? String(row.suggestedQuantity) : ""]),
-      ),
-    );
-  }, [tentId, visibleRowsSignature]);
+  function quantityFor(inventoryId: string): string {
+    if (
+      quantityEdits.tentId === tentId &&
+      Object.hasOwn(quantityEdits.values, inventoryId)
+    ) {
+      return quantityEdits.values[inventoryId];
+    }
+    return defaultQuantities[inventoryId] ?? "";
+  }
 
   function submit() {
     setError(null);
@@ -101,7 +109,7 @@ export function AllocateForm({
         actor,
         items: visibleRows.map((row) => ({
           inventoryId: row.id,
-          quantity: quantities[row.id] ?? "",
+          quantity: quantityFor(row.id),
         })),
       });
       if (result.ok) {
@@ -118,13 +126,13 @@ export function AllocateForm({
         e.preventDefault();
         submit();
       }}
-      className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"
+      className="flex flex-col gap-4 rounded-xl border border-fog bg-white p-5"
     >
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-ash">
         Daftar barang untuk dialokasikan ke Tenda ini
       </h2>
 
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-sm text-graphite">
         Sistem menampilkan daftar barang/makanan sekaligus. Jumlah awal diisi dari
         rule kebutuhan tenda, tetapi tetap bisa diubah manual sebelum disimpan.
       </p>
@@ -135,13 +143,13 @@ export function AllocateForm({
         <Metric label="Sisa rencana" value={`${plannedKcal.toLocaleString("id-ID")} kcal`} />
       </div>
 
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="rounded-lg border border-fog bg-linen p-3 text-sm">
         {visibleRows.length === 0 ? (
-          <p className="text-zinc-500">Belum ada stok yang tersedia untuk ditampilkan.</p>
+          <p className="text-ash">Belum ada stok yang tersedia untuk ditampilkan.</p>
         ) : (
-          <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="nadi-table-scroll rounded-lg border border-fog bg-white">
             <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-left text-xs uppercase tracking-wide text-zinc-500 dark:bg-zinc-950">
+              <thead className="bg-linen text-left text-xs uppercase tracking-wide text-ash">
                 <tr>
                   <th className="px-3 py-2 font-medium">Barang</th>
                   <th className="px-3 py-2 font-medium">Sisa</th>
@@ -151,33 +159,36 @@ export function AllocateForm({
               </thead>
               <tbody>
                 {visibleRows.map((row) => (
-                  <tr key={row.id} className="border-t border-zinc-200 dark:border-zinc-800">
+                  <tr key={row.id} className="border-t border-fog">
                     <td className="px-3 py-2">
-                      <div className="font-medium text-zinc-900 dark:text-zinc-100">
+                      <div className="font-medium text-carbon">
                         {row.name}
                       </div>
-                      <div className="text-xs text-zinc-500">
+                      <div className="text-xs text-ash">
                         {row.category}
                         {row.isHighProtein ? " · protein" : ""}
                       </div>
                     </td>
-                    <td className="px-3 py-2 tabular-nums text-zinc-500">
+                    <td className="px-3 py-2 tabular-nums text-ash">
                       {row.available} {row.unit}
                     </td>
-                    <td className="px-3 py-2 tabular-nums text-zinc-500">
+                    <td className="px-3 py-2 tabular-nums text-ash">
                       {row.suggestedQuantity > 0 ? `${row.suggestedQuantity} ${row.unit}` : "—"}
                     </td>
                     <td className="px-3 py-2 text-right">
                       <input
-                        className="w-24 rounded-lg border border-zinc-300 bg-white px-2 py-1 text-right text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950"
+                        className="w-24 rounded-lg border border-fog bg-white px-2 py-1 text-right text-sm outline-none focus:border-lavender"
                         type="number"
                         min={0}
                         step="any"
-                        value={quantities[row.id] ?? ""}
+                        value={quantityFor(row.id)}
                         onChange={(e) =>
-                          setQuantities((current) => ({
-                            ...current,
-                            [row.id]: e.target.value,
+                          setQuantityEdits((current) => ({
+                            tentId,
+                            values: {
+                              ...(current.tentId === tentId ? current.values : {}),
+                              [row.id]: e.target.value,
+                            },
                           }))
                         }
                       />
@@ -191,7 +202,7 @@ export function AllocateForm({
       </div>
 
       <label className="flex flex-col gap-1 text-sm sm:max-w-xs">
-        <span className="text-zinc-600 dark:text-zinc-400">Dicatat oleh</span>
+        <span className="text-graphite">Dicatat oleh</span>
         <input
           className={inputClass}
           value={actor}
@@ -201,13 +212,13 @@ export function AllocateForm({
       </label>
 
       {error && (
-        <p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+        <p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
           Ditolak: {error}
         </p>
       )}
 
       {done && (
-        <p className="rounded-lg border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300">
+        <p className="rounded-lg border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-700">
           {done}
         </p>
       )}
@@ -215,7 +226,7 @@ export function AllocateForm({
       <button
         type="submit"
         disabled={pending || visibleRows.length === 0}
-        className="self-start rounded-lg bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        className="self-start rounded-lg bg-lavender px-5 py-2.5 text-sm font-medium text-white hover:bg-iris disabled:opacity-50"
       >
         {pending ? "Menyimpan…" : "Simpan alokasi"}
       </button>
@@ -225,8 +236,8 @@ export function AllocateForm({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-xs uppercase tracking-wide text-zinc-500">{label}</p>
+    <div className="rounded-lg border border-fog bg-white p-3">
+      <p className="text-xs uppercase tracking-wide text-ash">{label}</p>
       <p className="mt-1 text-sm font-semibold tabular-nums">{value}</p>
     </div>
   );

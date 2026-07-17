@@ -87,7 +87,7 @@ async function main() {
 
   step("11 the Tent's Heat reflects the change, with correct Reasons");
   const before = (await getTentHeatDetail(tent.id))!;
-  await createComplaint({ residentId: hh.residents.find((r) => r.name === "Bapak Tracer")!.id, symptoms: ["Sesak napas"] });
+  await createComplaint({ residentId: hh.residents.find((r) => r.name === "Bapak Tracer")!.id, symptoms: ["Sesak napas"], source: "VOLUNTEER" });
   const mid = (await getTentHeatDetail(tent.id))!;
   check("an open complaint raises a named Reason", mid.heat.reasons.some((r) => /open complaint at Merah/.test(r)));
   const open = await prisma.complaint.findFirst({ where: { resident: { household: { id } }, resolvedAt: null }, select: { id: true } });

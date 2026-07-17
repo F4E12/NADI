@@ -52,9 +52,12 @@ export async function searchResidents(rawQuery: string): Promise<ResidentHit[]> 
   }));
 }
 
+export type ComplaintSource = "VOLUNTEER" | "SELF";
+
 export async function createComplaint(input: {
   residentId: string;
   symptoms: string[];
+  source: ComplaintSource;
 }): Promise<PriorityLevel> {
   const suggested = classifyComplaint(input.symptoms);
   await prisma.complaint.create({
@@ -62,6 +65,7 @@ export async function createComplaint(input: {
       residentId: input.residentId,
       freeText: input.symptoms.join(", "),
       symptoms: JSON.stringify(input.symptoms),
+      source: input.source,
       suggestedPriority: suggested,
       confirmedPriority: null,
       confirmedBy: null,
@@ -112,6 +116,7 @@ export type OpenComplaint = {
   householdName: string;
   tentName: string;
   symptoms: string[];
+  source: ComplaintSource;
   suggestedPriority: PriorityLevel;
   confirmedPriority: PriorityLevel | null;
   effectivePriority: PriorityLevel;
@@ -125,6 +130,7 @@ export async function listOpenComplaints(): Promise<OpenComplaint[]> {
     select: {
       id: true,
       symptoms: true,
+      source: true,
       suggestedPriority: true,
       confirmedPriority: true,
       confirmedBy: true,
@@ -151,6 +157,7 @@ export async function listOpenComplaints(): Promise<OpenComplaint[]> {
         householdName: c.resident.household.name,
         tentName: c.resident.household.tent.name,
         symptoms: parseSymptoms(c.symptoms),
+        source: c.source as ComplaintSource,
         suggestedPriority: suggested,
         confirmedPriority: confirmed,
         effectivePriority: effective,

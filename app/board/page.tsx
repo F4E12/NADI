@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { Reveal } from "@/components/reveal";
 
 export const metadata: Metadata = {
-  title: "Papan Warga · Posko Hub",
+  title: "Papan Warga · NADI",
 };
 
 const KITCHEN = [
@@ -62,83 +63,104 @@ const RED_FLAGS = [
 
 export default function BoardPage() {
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Papan Warga</h1>
-        <p className="mt-1 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
-          Informasi Posko, jadwal dapur, dan panduan pertolongan pertama. Halaman
-          ini hanya untuk dibaca — tidak perlu akun, tidak perlu mengisi apa pun,
-          dan bekerja tanpa internet.
+    <Reveal className="nadi-product-page mx-auto flex max-w-3xl flex-col gap-8">
+      <div data-reveal className="pt-4 text-center">
+        <span className="nadi-public-status">
+          <i aria-hidden="true" />
+          <strong>Akses publik</strong>
+          <span aria-hidden="true">·</span>
+          <span>Hanya baca, tanpa akun</span>
+        </span>
+        <h1 className="mt-5 text-heading font-semibold text-carbon">
+          Papan Warga
+        </h1>
+        <p className="mx-auto mt-3 max-w-xl text-body text-graphite">
+          Informasi Posko, jadwal dapur, dan panduan pertolongan pertama. Tidak
+          perlu mengisi apa pun, dan bekerja tanpa internet.
         </p>
       </div>
 
-      <section className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+      <section
+        data-reveal
+        className="rounded-2xl border border-fog bg-paper-white p-6"
+      >
+        <h2 className="text-subheading font-medium text-carbon">
           Jadwal Dapur Umum
         </h2>
-        <ul className="mt-3 divide-y divide-zinc-200 dark:divide-zinc-800">
+        <ul className="mt-4 divide-y divide-fog">
           {KITCHEN.map((k) => (
-            <li key={k.meal} className="flex items-center justify-between py-2 text-sm">
-              <span className="font-medium">{k.meal}</span>
-              <span className="tabular-nums text-zinc-600 dark:text-zinc-400">{k.time}</span>
+            <li
+              key={k.meal}
+              className="flex items-center justify-between py-3 text-[14px]"
+            >
+              <span className="font-medium text-carbon">{k.meal}</span>
+              <span className="rounded-full bg-mist px-3 py-1 tabular-nums text-graphite">
+                {k.time}
+              </span>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+      <section
+        data-reveal
+        className="rounded-2xl border border-fog bg-paper-white p-6"
+      >
+        <h2 className="text-subheading font-medium text-carbon">
           Informasi Posko
         </h2>
-        <ul className="mt-3 flex flex-col gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+        <ul className="mt-4 flex flex-col gap-3 text-body text-graphite">
           {INFO.map((line) => (
-            <li key={line} className="flex gap-2">
-              <span className="text-zinc-400">•</span>
+            <li key={line} className="flex gap-3">
+              <span className="text-mint">✓</span>
               <span>{line}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+      <section
+        data-reveal
+        className="rounded-2xl border border-fog bg-paper-white p-6"
+      >
+        <h2 className="text-subheading font-medium text-carbon">
           Pertolongan Pertama (P3K)
         </h2>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+        <div className="mt-4 grid gap-x-8 gap-y-6 sm:grid-cols-2">
           {FIRST_AID.map((item) => (
             <div key={item.title}>
-              <h3 className="font-medium">{item.title}</h3>
-              <ul className="mt-1 flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-400">
+              <h3 className="font-medium text-carbon">{item.title}</h3>
+              <ol className="mt-2 flex flex-col gap-2 text-[14px] text-graphite">
                 {item.steps.map((s, i) => (
-                  <li key={i} className="flex gap-2">
-                    <span className="text-zinc-400">{i + 1}.</span>
+                  <li key={i} className="flex gap-3">
+                    <span className="tabular-nums text-ash">{i + 1}.</span>
                     <span>{s}</span>
                   </li>
                 ))}
-              </ul>
+              </ol>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="rounded-xl border border-red-300 bg-red-50 p-5 dark:border-red-900 dark:bg-red-950">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-red-700 dark:text-red-300">
+      <section data-reveal className="rounded-2xl bg-ember-wash p-6">
+        <h2 className="text-subheading font-medium text-ember-deep">
           Cari Relawan / medis segera bila
         </h2>
-        <ul className="mt-3 flex flex-col gap-1 text-sm text-red-800 dark:text-red-200">
+        <ul className="mt-3 flex flex-col gap-2 text-body text-ember-deep">
           {RED_FLAGS.map((f) => (
-            <li key={f} className="flex gap-2">
-              <span>•</span>
+            <li key={f} className="flex gap-3">
+              <span>!</span>
               <span>{f}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      <p className="text-xs text-zinc-500">
+      <p data-reveal className="text-center text-caption text-ash">
         Panduan umum, bukan pengganti tenaga medis. Bila ragu, hubungi Relawan
         Posko.
       </p>
-    </div>
+    </Reveal>
   );
 }

@@ -57,9 +57,9 @@ export function NewHouseholdForm({
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-600 dark:text-zinc-400">Nama keluarga</span>
+          <span className="text-graphite">Nama keluarga</span>
           <input
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+            className="w-full rounded-lg border border-fog bg-white px-3 py-2 text-sm outline-none focus:border-lavender"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="mis. Wijaya"
@@ -68,9 +68,9 @@ export function NewHouseholdForm({
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-600 dark:text-zinc-400">Tenda</span>
+          <span className="text-graphite">Tenda</span>
           <select
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+            className="w-full rounded-lg border border-fog bg-white px-3 py-2 text-sm outline-none focus:border-lavender"
             value={tentId}
             onChange={(e) => setTentId(e.target.value)}
           >
@@ -97,14 +97,14 @@ export function NewHouseholdForm({
         <button
           type="button"
           onClick={addResident}
-          className="self-start rounded-lg border border-zinc-300 px-3 py-2 text-sm hover:border-zinc-500 dark:border-zinc-700"
+          className="self-start rounded-lg border border-fog px-3 py-2 text-sm hover:border-ash"
         >
           + Tambah Resident
         </button>
       </div>
 
       {error && (
-        <p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+        <p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
       )}
@@ -113,11 +113,11 @@ export function NewHouseholdForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          className="rounded-lg bg-lavender px-5 py-2.5 text-sm font-medium text-white hover:bg-iris disabled:opacity-50"
         >
           {pending ? "Mendaftarkan…" : "Daftarkan & terbitkan Dompet Gizi"}
         </button>
-        <span className="text-xs text-zinc-500">
+        <span className="text-xs text-ash">
           Satu Dompet Gizi diterbitkan otomatis untuk Household ini.
         </span>
       </div>
