@@ -29,8 +29,10 @@ const PRIORITY_LEVELS: ReadonlyArray<{
 const severityOf = (level: PriorityLevel) =>
   PRIORITY_LEVELS.find((p) => p.level === level)!.severity;
 
-const COUNT_WORTH_A_VISIT = 3;
-const CROWDED_RATIO = 0.9;
+export const COUNT_WORTH_A_VISIT = 3;
+export const CROWDED_RATIO = 0.9;
+export const COVER_MERAH_DAYS = 1;
+export const COVER_KUNING_DAYS = 2;
 
 export function tentHeat(tent: TentState): Heat {
   const contributions = [
@@ -94,10 +96,10 @@ function occupancyPressure({ occupancy, maxCapacity }: TentState): Contribution[
 }
 
 function supplyShortage({ daysOfCover }: TentState): Contribution[] {
-  if (daysOfCover < 1) {
+  if (daysOfCover < COVER_MERAH_DAYS) {
     return [{ level: "MERAH", reason: "Supplies under 1 day of cover" }];
   }
-  if (daysOfCover < 2) {
+  if (daysOfCover < COVER_KUNING_DAYS) {
     return [{ level: "KUNING", reason: "Supplies under 2 days of cover" }];
   }
   return [];

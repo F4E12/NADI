@@ -14,7 +14,7 @@ export type TentHeat = {
   daysOfCover: number;
   chronicCount: number;
   sickCount: number;
-  openComplaintCount: number;
+  complaintCounts: Record<PriorityLevel, number>;
 };
 
 export async function listTentHeat(): Promise<TentHeat[]> {
@@ -54,6 +54,12 @@ export async function listTentHeat(): Promise<TentHeat[]> {
       const openComplaints = residents.flatMap((r) =>
         r.complaints.map((c) => c.suggestedPriority as PriorityLevel),
       );
+      const complaintCounts: Record<PriorityLevel, number> = {
+        MERAH: 0,
+        KUNING: 0,
+        HIJAU: 0,
+      };
+      for (const c of openComplaints) complaintCounts[c] += 1;
 
       const requirement = tentEntitlement(
         tent.households.map((h) => householdEntitlement(h.residents)),
@@ -84,7 +90,7 @@ export async function listTentHeat(): Promise<TentHeat[]> {
         daysOfCover: cover,
         chronicCount,
         sickCount,
-        openComplaintCount: openComplaints.length,
+        complaintCounts,
       };
     })
     .sort(
