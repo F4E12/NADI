@@ -6,7 +6,7 @@ When a natural disaster strikes, the first 72 hours are the most critical for su
 
 *NADI* is a 100% offline, local-network disaster management platform that transforms a standard volunteer's laptop into a powerful system to manage aid and help in natural disasters.
 
-* *Visual Triage & Intake:* Survivors don't need IDs or QR codes. Using local facial recognition via a webcam, NADI identifies survivors, pulls up their pre-seeded medical history, and automatically updates their status from "Missing" to "Safe."
+* *Visual Triage & Intake:* Using local facial recognition via a webcam, NADI identifies survivors, pulls up their pre-seeded medical history, and automatically updates their status from "Missing" to "Safe."
 * *Command Center Heatmap:* The dashboard visualizes the refugee camp. Tents light up in red if they house highly vulnerable individuals (e.g., asthmatic or diabetic patients), allowing medical teams to prioritize their rounds.
 * *Passive Proof of Life (Smart Ledger):* Food and medical distribution are linked to the survivor's profile. When a survivor receives rations, the system strictly logs the transaction to prevent hoarding and simultaneously updates their "Last Seen" timestamp and location, passively tracking missing persons without extra administrative work.
 * *Asynchronous Export:* Once the volunteer leaves the zero-internet zone, a one-click export generates a highly compressed, unified JSON/CSV SAR report ready to be securely transmitted to headquarters.
