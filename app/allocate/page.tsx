@@ -112,8 +112,11 @@ export default async function AllocatePage({
 
       <AllocateForm
         tentId={tentId}
+        tentPopulation={view.occupancy}
         pool={pool}
         composition={view.composition}
+        requirementKcalPerDay={view.requirement.kcalPerDay}
+        allocatedKcal={view.allocatedKcal}
       />
     </div>
   );

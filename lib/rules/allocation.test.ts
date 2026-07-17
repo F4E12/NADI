@@ -6,6 +6,8 @@ import {
   daysOfCover,
   distributionDecision,
   sufficiencyDecision,
+  suggestDistributionSelection,
+  suggestTentAllocationPlan,
   tentComposition,
 } from "./allocation";
 
@@ -183,7 +185,9 @@ describe("distributionDecision", () => {
     requestedQuantity: 5,
     tentAllocationQuantity: 100,
     householdKcalPerDay: 6600,
+    householdMemberCount: 4,
     alreadyCollectedThisPeriod: false,
+    isWaterStock: false,
   };
 
   it("permits a handover the tent can cover to an entitled household", () => {
@@ -227,5 +231,156 @@ describe("distributionDecision", () => {
     });
     expect(decision.allowed).toBe(false);
     if (!decision.allowed) expect(decision.reason).toContain("already collected");
+  });
+
+  it("requires at least 2 liters of water per household member", () => {
+    const decision = distributionDecision({
+      ...base,
+      stockName: "Air bersih",
+      unit: "liter",
+      isWaterStock: true,
+      requestedQuantity: 7,
+      householdMemberCount: 4,
+    });
+
+    expect(decision.allowed).toBe(false);
+    if (!decision.allowed) {
+      expect(decision.reason).toContain("at least 8");
+      expect(decision.reason).toContain("water");
+    }
+  });
+});
+
+describe("suggestTentAllocationPlan", () => {
+  it("prefers allocatable stock and skips locked high-protein items", () => {
+    const plan = suggestTentAllocationPlan({
+      requirementKcalPerDay: 5000,
+      allocatedKcal: 0,
+      tentPopulation: 36,
+      tent: { hasToddler: false, hasPregnantResident: false },
+      stock: [
+        {
+          inventoryId: "protein",
+          name: "Susu bubuk",
+          category: "Gizi tinggi protein",
+          unit: "kg",
+          available: 10,
+          kcalPerUnit: 4900,
+          isHighProtein: true,
+        },
+        {
+          inventoryId: "staple",
+          name: "Beras",
+          category: "Makanan pokok",
+          unit: "kg",
+          available: 10,
+          kcalPerUnit: 3600,
+          isHighProtein: false,
+        },
+      ],
+    });
+
+    expect(plan.some((item) => item.inventoryId === "protein")).toBe(false);
+    expect(plan.find((item) => item.inventoryId === "staple")?.quantity ?? 0).toBeGreaterThan(0);
+  });
+
+  it("spreads the plan across multiple items instead of dumping everything into the first one", () => {
+    const plan = suggestTentAllocationPlan({
+      requirementKcalPerDay: 5000,
+      allocatedKcal: 0,
+      tentPopulation: 36,
+      tent: { hasToddler: true, hasPregnantResident: false },
+      stock: [
+        {
+          inventoryId: "ikan",
+          name: "Ikan kaleng",
+          category: "Gizi tinggi protein",
+          unit: "kaleng",
+          available: 1000,
+          kcalPerUnit: 190,
+          isHighProtein: true,
+        },
+        {
+          inventoryId: "beras",
+          name: "Beras",
+          category: "Makanan pokok",
+          unit: "kg",
+          available: 1000,
+          kcalPerUnit: 3600,
+          isHighProtein: false,
+        },
+        {
+          inventoryId: "mie",
+          name: "Mie instan",
+          category: "Makanan pokok",
+          unit: "bungkus",
+          available: 1000,
+          kcalPerUnit: 380,
+          isHighProtein: false,
+        },
+      ],
+    });
+
+    expect(plan.length).toBeGreaterThan(1);
+    expect(plan.find((item) => item.inventoryId === "beras")?.quantity ?? 0).toBeGreaterThan(0);
+    expect(plan.find((item) => item.inventoryId === "ikan")?.quantity ?? 0).toBeGreaterThan(0);
+    expect(plan.some((item) => item.inventoryId === "beras")).toBe(true);
+    expect(plan.some((item) => item.inventoryId === "mie")).toBe(true);
+  });
+});
+
+describe("suggestDistributionSelection", () => {
+  it("prefills a non-empty quantity from household entitlement and skips already collected items", () => {
+    expect(
+      suggestDistributionSelection({
+        householdKcalPerDay: 2200,
+        householdMemberCount: 4,
+        stock: [
+          {
+            inventoryId: "beras",
+            name: "Beras",
+            unit: "kg",
+            available: 100,
+            kcalPerUnit: 3600,
+            collectedThisPeriod: false,
+          },
+          {
+            inventoryId: "telur",
+            name: "Telur",
+            unit: "butir",
+            available: 24,
+            kcalPerUnit: 70,
+            collectedThisPeriod: true,
+          },
+        ],
+      }),
+    ).toEqual({ inventoryId: "beras", quantity: 1 });
+  });
+
+  it("prefers water when available and uses the household minimum", () => {
+    expect(
+      suggestDistributionSelection({
+        householdKcalPerDay: 2200,
+        householdMemberCount: 5,
+        stock: [
+          {
+            inventoryId: "air",
+            name: "Air bersih",
+            unit: "liter",
+            available: 100,
+            kcalPerUnit: 0,
+            collectedThisPeriod: false,
+          },
+          {
+            inventoryId: "beras",
+            name: "Beras",
+            unit: "kg",
+            available: 100,
+            kcalPerUnit: 3600,
+            collectedThisPeriod: false,
+          },
+        ],
+      }),
+    ).toEqual({ inventoryId: "air", quantity: 10 });
   });
 });

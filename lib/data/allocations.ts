@@ -8,6 +8,7 @@ import {
   allocatedKcalOf,
   allocationCheck,
   daysOfCover,
+  suggestTentAllocationPlan,
   tentComposition,
   type TentComposition,
 } from "@/lib/rules/allocation";
@@ -175,6 +176,7 @@ export type InventoryPoolItem = {
   unit: string;
   available: number;
   isHighProtein: boolean;
+  kcalPerUnit: number;
 };
 
 export async function listInventoryPool(): Promise<InventoryPoolItem[]> {
@@ -187,6 +189,7 @@ export async function listInventoryPool(): Promise<InventoryPoolItem[]> {
       unit: true,
       quantity: true,
       isHighProtein: true,
+      kcalPerUnit: true,
     },
   });
   return items.map((i) => ({
@@ -196,5 +199,49 @@ export async function listInventoryPool(): Promise<InventoryPoolItem[]> {
     unit: i.unit,
     available: i.quantity,
     isHighProtein: i.isHighProtein,
+    kcalPerUnit: i.kcalPerUnit,
   }));
+}
+
+export type AutoAllocationPlanItem = {
+  inventoryId: string;
+  name: string;
+  unit: string;
+  quantity: number;
+};
+
+export async function buildAutoAllocationPlan(tentId: string): Promise<{
+  view: TentAllocationView;
+  plan: AutoAllocationPlanItem[];
+  remainingKcal: number;
+} | null> {
+  const [view, pool] = await Promise.all([getTentAllocationView(tentId), listInventoryPool()]);
+  if (!view) return null;
+
+  const plan = suggestTentAllocationPlan({
+    requirementKcalPerDay: view.requirement.kcalPerDay,
+    allocatedKcal: view.allocatedKcal,
+    tentPopulation: view.occupancy,
+    stock: pool.map((item) => ({
+      inventoryId: item.id,
+      name: item.name,
+      category: item.category,
+      isHighProtein: item.isHighProtein,
+      unit: item.unit,
+      available: item.available,
+      kcalPerUnit: item.kcalPerUnit,
+    })),
+    tent: view.composition,
+  });
+
+  const plannedKcal = plan.reduce((sum, item) => {
+    const stock = pool.find((candidate) => candidate.id === item.inventoryId);
+    return sum + (stock ? item.quantity * stock.kcalPerUnit : 0);
+  }, 0);
+
+  return {
+    view,
+    plan,
+    remainingKcal: Math.max(0, view.requirement.kcalPerDay - view.allocatedKcal - plannedKcal),
+  };
 }

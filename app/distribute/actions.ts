@@ -62,3 +62,47 @@ export async function recordDistributionAction(input: {
     message: `Distribusi tercatat di ${outcome.tentName}.`,
   };
 }
+
+export type BatchRecordResult =
+  | { ok: true; message: string; context: DistributionContext }
+  | { ok: false; error: string; context: DistributionContext | null };
+
+export async function recordDistributionBatch(input: {
+  householdId: string;
+  actor: string;
+  items: Array<{ inventoryId: string; quantity: string }>;
+}): Promise<BatchRecordResult> {
+  const quantities = input.items
+    .map((item) => ({ inventoryId: item.inventoryId, quantity: Number(item.quantity) }))
+    .filter((item) => item.inventoryId && Number.isFinite(item.quantity) && item.quantity > 0);
+
+  const contextBefore = await getDistributionContext(input.householdId);
+  if (!contextBefore) return { ok: false, error: "Household tidak ditemukan", context: null };
+
+  if (quantities.length === 0) {
+    return { ok: false, error: "Belum ada barang dengan jumlah yang valid", context: contextBefore };
+  }
+
+  const actor = input.actor.trim() || "Relawan";
+  for (const item of quantities) {
+    const outcome = await recordDistribution({
+      householdId: input.householdId,
+      inventoryId: item.inventoryId,
+      quantity: item.quantity,
+      actor,
+    });
+    if (!outcome.ok) {
+      return { ok: false, error: outcome.reason, context: await getDistributionContext(input.householdId) };
+    }
+  }
+
+  const context = await getDistributionContext(input.householdId);
+  revalidatePath("/distribute");
+  revalidatePath("/presence");
+  revalidatePath("/");
+  return {
+    ok: true,
+    message: `Distribusi tersimpan untuk ${quantities.length} barang.`,
+    context: context ?? contextBefore,
+  };
+}
