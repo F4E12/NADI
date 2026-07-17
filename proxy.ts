@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { roleForIp } from "@/lib/device-role";
+import { recordDeviceSighting } from "@/lib/data/devices";
+import { isLaptopAddress, macForIp, roleForIp } from "@/lib/device-role";
 
 const RESIDENT_PREFIXES = [
   "/board",
@@ -17,6 +18,11 @@ function residentAllowed(path: string): boolean {
 export async function proxy(request: NextRequest) {
   const ip = (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
   const role = await roleForIp(ip);
+
+  if (ip && !isLaptopAddress(ip)) {
+    const bareIp = ip.replace(/^::ffff:/, "");
+    await recordDeviceSighting({ ip: bareIp, mac: await macForIp(bareIp) });
+  }
 
   if (role === "RESIDENT" && !residentAllowed(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/volunteer-only", request.url));

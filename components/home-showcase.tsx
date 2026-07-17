@@ -87,11 +87,7 @@ export function HomeShowcase({ metrics, tents, role }: { metrics: Metrics; tents
 
       const intro = gsap.timeline({ defaults: { ease: "power4.out" } });
       intro
-        .fromTo(".nadi-intro-mark", { scale: 0.78, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.65 })
-        .to(".nadi-intro-mark", { scale: 1.08, duration: 0.35 }, "+=0.15")
-        .to(".nadi-intro", { clipPath: "inset(0 0 100% 0)", duration: 0.82, ease: "power4.inOut" })
-        .set(".nadi-intro", { display: "none" })
-        .from("[data-hero]", { y: 28, autoAlpha: 0, duration: 0.85, stagger: 0.09 }, "-=0.32")
+        .from("[data-hero]", { y: 28, autoAlpha: 0, duration: 0.85, stagger: 0.09 })
         .from("[data-signal]", { scale: 0.7, autoAlpha: 0, duration: 0.55, stagger: 0.055 }, "-=0.72")
         .from(".nadi-hero-console", { y: 50, autoAlpha: 0, duration: 1 }, "-=0.66");
 

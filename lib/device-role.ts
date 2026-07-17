@@ -13,10 +13,16 @@ const arpCache = new Map<string, { mac: string | null; at: number }>();
 
 export function normalizeMac(raw: string): string {
   return raw
+    .trim()
     .toLowerCase()
+    .replaceAll("-", ":")
     .split(":")
     .map((octet) => octet.padStart(2, "0"))
     .join(":");
+}
+
+export function isValidMac(raw: string): boolean {
+  return /^([0-9a-f]{1,2}[:-]){5}[0-9a-f]{1,2}$/i.test(raw.trim());
 }
 
 const ARP_LINE = /\(([\d.]+)\) at ([0-9a-f:]+) on/i;

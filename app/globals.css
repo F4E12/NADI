@@ -311,9 +311,14 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .nadi-public-status strong { color: var(--ink); font-weight: 600; }
 
 .nadi-home { position: relative; }
-.nadi-intro { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--ink); clip-path: inset(0); }
+.nadi-intro { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--ink); clip-path: inset(0); animation: nadi-intro-exit 1.85s var(--ease-out) forwards; pointer-events: none; }
 .nadi-intro-mark .nadi-mark { width: 106px; height: 124px; gap: 8px; }
 .nadi-intro-mark .nadi-mark i { width: 50px; }
+@keyframes nadi-intro-exit {
+  0% { clip-path: inset(0); visibility: visible; }
+  46% { clip-path: inset(0); visibility: visible; }
+  100% { clip-path: inset(0 0 100%); visibility: hidden; }
+}
 .nadi-hero { position: relative; left: 50%; display: flex; min-height: 930px; width: 100vw; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; border-bottom: 1px solid var(--rule); transform: translateX(-50%); }
 .nadi-hero::before { content: ""; position: absolute; inset: 0; opacity: .22; pointer-events: none; background-image: linear-gradient(to right, var(--rule) 1px, transparent 1px), linear-gradient(to bottom, var(--rule) 1px, transparent 1px); background-size: min(16.66vw, 210px) 100%, 100% 155px; mask-image: linear-gradient(to bottom, transparent, black 22%, black 82%, transparent); }
 .nadi-hero-copy { position: relative; z-index: 4; display: flex; max-width: 820px; flex-direction: column; align-items: center; padding: 100px 24px 330px; text-align: center; }

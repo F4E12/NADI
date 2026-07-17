@@ -113,6 +113,14 @@ model Device {
   registeredAt DateTime @default(now())
 }
 
+model DeviceSighting {
+  ip         String   @id
+  mac        String?
+  lastSeenAt DateTime @default(now())
+
+  @@index([lastSeenAt])
+}
+
 model Complaint {
   id                String    @id @default(cuid())
   freeText          String

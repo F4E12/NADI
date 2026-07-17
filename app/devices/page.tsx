@@ -1,4 +1,4 @@
-import { listDevices } from "@/lib/data/devices";
+import { listDevices, listRecentDeviceSightings } from "@/lib/data/devices";
 import { arpNeighbourhood, requireLaptop } from "@/lib/device-role";
 import { formatDateTime } from "@/lib/format";
 import { registerDeviceAction, revokeDeviceAction } from "./actions";
@@ -18,8 +18,9 @@ export default async function DevicesPage() {
     );
   }
 
-  const [devices, neighbours] = await Promise.all([
+  const [devices, sightings, neighbours] = await Promise.all([
     listDevices(),
+    listRecentDeviceSightings(),
     arpNeighbourhood(),
   ]);
   const registered = new Set(devices.map((d) => d.mac));
@@ -72,31 +73,33 @@ export default async function DevicesPage() {
 
       <section className="overflow-hidden rounded-xl border border-fog bg-white">
         <div className="border-b border-fog px-5 py-3">
-          <h2 className="text-sm font-semibold">Perangkat di Wi-Fi saat ini</h2>
+          <h2 className="text-sm font-semibold">Resident Device yang baru membuka NADI</h2>
           <p className="mt-0.5 text-xs text-ash">
-            Minta Volunteer membuka situs ini dari teleponnya agar muncul di
-            daftar, lalu daftarkan barisnya.
+            Minta Volunteer membuka NADI dari teleponnya, lalu muat ulang halaman
+            ini. Kunjungan dalam 10 menit terakhir muncul paling baru di atas.
           </p>
         </div>
-        {neighbours.length === 0 ? (
+        {sightings.length === 0 ? (
           <p className="px-5 py-4 text-sm text-ash">
-            Belum ada perangkat lain yang terlihat di jaringan.
+            Belum ada Resident Device yang membuka NADI dalam 10 menit terakhir.
           </p>
         ) : (
           <ul className="divide-y divide-fog">
-            {neighbours.map((n) => (
-              <li key={n.mac} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
+            {sightings.map((sighting) => (
+              <li key={sighting.ip} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
                 <div className="flex-1">
-                  <p className="font-mono text-sm">{n.mac}</p>
-                  <p className="text-xs text-ash">{n.ip}</p>
+                  <p className="font-mono text-sm">{sighting.mac ?? "MAC belum terlihat"}</p>
+                  <p className="text-xs text-ash">
+                    {sighting.ip} · {formatDateTime(sighting.lastSeenAt)}
+                  </p>
                 </div>
-                {registered.has(n.mac) ? (
+                {sighting.mac && registered.has(sighting.mac) ? (
                   <span className="rounded-full bg-linen px-3 py-1 text-xs font-medium text-graphite">
                     Terdaftar
                   </span>
-                ) : (
+                ) : sighting.mac ? (
                   <form action={registerDeviceAction} className="flex w-full items-center gap-2 sm:w-auto">
-                    <input type="hidden" name="mac" value={n.mac} />
+                    <input type="hidden" name="mac" value={sighting.mac} />
                     <input
                       name="label"
                       placeholder="Label (mis. HP Budi)"
@@ -109,12 +112,68 @@ export default async function DevicesPage() {
                       Daftarkan
                     </button>
                   </form>
+                ) : (
+                  <span className="max-w-xs text-xs text-ash">
+                    Wi-Fi tidak membuka alamat perangkat. Gunakan pendaftaran manual di bawah.
+                  </span>
                 )}
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      <section className="overflow-hidden rounded-xl border border-fog bg-white">
+        <div className="border-b border-fog px-5 py-3">
+          <h2 className="text-sm font-semibold">Daftarkan lewat alamat MAC</h2>
+          <p className="mt-0.5 text-xs text-ash">
+            Fallback untuk Wi-Fi yang menyembunyikan perangkat. Buka detail jaringan
+            Wi-Fi di telepon, lalu salin “Alamat Wi-Fi”, “Private Wi-Fi Address”, atau “MAC”.
+          </p>
+        </div>
+        <form action={registerDeviceAction} className="grid gap-3 p-5 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+          <label className="grid gap-1 text-xs font-medium text-graphite">
+            Alamat MAC
+            <input
+              required
+              name="mac"
+              placeholder="2a:c1:36:89:c0:44"
+              pattern="[0-9A-Fa-f]{1,2}([:-][0-9A-Fa-f]{1,2}){5}"
+              className="rounded-lg border border-fog bg-white px-3 py-2 font-mono text-sm outline-none focus:border-lavender"
+            />
+          </label>
+          <label className="grid gap-1 text-xs font-medium text-graphite">
+            Label
+            <input
+              name="label"
+              placeholder="mis. HP Budi"
+              className="rounded-lg border border-fog bg-white px-3 py-2 text-sm outline-none focus:border-lavender"
+            />
+          </label>
+          <button
+            type="submit"
+            className="rounded-lg bg-lavender px-4 py-2 text-sm font-medium text-white hover:bg-iris"
+          >
+            Daftarkan
+          </button>
+        </form>
+      </section>
+
+      <details className="border border-fog bg-white">
+        <summary className="cursor-pointer px-5 py-3 text-sm font-semibold">
+          Cache jaringan mentah ({neighbours.length})
+        </summary>
+        <p className="border-t border-fog px-5 py-3 text-xs text-ash">
+          Daftar diagnostik dari laptop; ini dapat berisi banyak perangkat yang tidak pernah membuka NADI.
+        </p>
+        <ul className="max-h-80 overflow-y-auto border-t border-fog px-5 py-3 font-mono text-xs text-ash">
+          {neighbours.map((neighbour) => (
+            <li key={`${neighbour.ip}-${neighbour.mac}`} className="py-1">
+              {neighbour.ip} · {neighbour.mac}
+            </li>
+          ))}
+        </ul>
+      </details>
     </div>
   );
 }
