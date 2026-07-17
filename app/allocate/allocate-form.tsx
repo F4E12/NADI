@@ -1,51 +1,111 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
-import { allocationDecision, type TentComposition } from "@/lib/rules/allocation";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import {
+  suggestTentAllocationPlan,
+  type TentComposition,
+} from "@/lib/rules/allocation";
 import type { InventoryPoolItem } from "@/lib/data/allocations";
-import { allocateStock } from "./actions";
+import { allocateStockBatch } from "./actions";
 
 const inputClass =
   "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900";
 
 export function AllocateForm({
   tentId,
+  tentPopulation,
   pool,
   composition,
+  requirementKcalPerDay,
+  allocatedKcal,
 }: {
   tentId: string;
+  tentPopulation: number;
   pool: InventoryPoolItem[];
   composition: TentComposition;
+  requirementKcalPerDay: number;
+  allocatedKcal: number;
 }) {
-  const router = useRouter();
-  const [inventoryId, setInventoryId] = useState(pool[0]?.id ?? "");
-  const [quantity, setQuantity] = useState("");
   const [actor, setActor] = useState("Koordinator");
+  const [quantities, setQuantities] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const item = pool.find((p) => p.id === inventoryId);
+  const plan = useMemo(
+    () =>
+      suggestTentAllocationPlan({
+        requirementKcalPerDay,
+        allocatedKcal,
+          tentPopulation,
+        stock: pool.map((item) => ({
+          inventoryId: item.id,
+          name: item.name,
+          category: item.category,
+          isHighProtein: item.isHighProtein,
+          unit: item.unit,
+          available: item.available,
+          kcalPerUnit: item.kcalPerUnit,
+        })),
+        tent: composition,
+      }),
+    [allocatedKcal, composition, pool, requirementKcalPerDay],
+  );
 
-  const lockWarning = useMemo(() => {
-    if (!item) return null;
-    const decision = allocationDecision(
-      { name: item.name, isHighProtein: item.isHighProtein },
-      composition,
+  const plannedKcal = useMemo(
+    () =>
+      plan.reduce((sum, item) => {
+        const stock = pool.find((candidate) => candidate.id === item.inventoryId);
+        return sum + (stock ? item.quantity * stock.kcalPerUnit : 0);
+      }, 0),
+    [plan, pool],
+  );
+
+  const rows = useMemo(() => {
+    const suggested = new Map(plan.map((item) => [item.inventoryId, item.quantity]));
+    return [...pool]
+      .sort((a, b) => {
+        if (a.isHighProtein !== b.isHighProtein) return a.isHighProtein ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      })
+      .map((item) => ({
+        ...item,
+        suggestedQuantity: suggested.get(item.id) ?? 0,
+      }));
+  }, [pool, plan]);
+
+  const visibleRows = rows.filter((row) => row.available > 0 || row.suggestedQuantity > 0);
+
+  const visibleRowsSignature = useMemo(
+    () =>
+      visibleRows
+        .map((row) => `${row.id}:${row.suggestedQuantity}:${row.available}`)
+        .join("|"),
+    [visibleRows],
+  );
+
+  useEffect(() => {
+    setQuantities(
+      Object.fromEntries(
+        visibleRows.map((row) => [row.id, row.suggestedQuantity > 0 ? String(row.suggestedQuantity) : ""]),
+      ),
     );
-    return decision.allowed ? null : decision.reason;
-  }, [item, composition]);
+  }, [tentId, visibleRowsSignature]);
 
   function submit() {
     setError(null);
     setDone(null);
     startTransition(async () => {
-      const result = await allocateStock({ tentId, inventoryId, quantity, actor });
+      const result = await allocateStockBatch({
+        tentId,
+        actor,
+        items: visibleRows.map((row) => ({
+          inventoryId: row.id,
+          quantity: quantities[row.id] ?? "",
+        })),
+      });
       if (result.ok) {
-        setDone(`${quantity} ${item?.unit ?? ""} ${item?.name ?? ""} dialokasikan.`);
-        setQuantity("");
-        router.refresh();
+        setDone(result.message);
       } else {
         setError(result.error);
       }
@@ -61,40 +121,73 @@ export function AllocateForm({
       className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"
     >
       <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-        Alokasikan stok ke Tenda ini
+        Daftar barang untuk dialokasikan ke Tenda ini
       </h2>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-          <span className="text-zinc-600 dark:text-zinc-400">Stok</span>
-          <select
-            className={inputClass}
-            value={inventoryId}
-            onChange={(e) => setInventoryId(e.target.value)}
-          >
-            {pool.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} — sisa {p.available} {p.unit}
-                {p.isHighProtein ? " (protein)" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        Sistem menampilkan daftar barang/makanan sekaligus. Jumlah awal diisi dari
+        rule kebutuhan tenda, tetapi tetap bisa diubah manual sebelum disimpan.
+      </p>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-zinc-600 dark:text-zinc-400">
-            Jumlah {item ? `(${item.unit})` : ""}
-          </span>
-          <input
-            className={inputClass}
-            type="number"
-            min={0}
-            step="any"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            placeholder="mis. 40"
-          />
-        </label>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Metric label="Kebutuhan/hari" value={`${requirementKcalPerDay.toLocaleString("id-ID")} kcal`} />
+        <Metric label="Sudah teralokasi" value={`${allocatedKcal.toLocaleString("id-ID")} kcal`} />
+        <Metric label="Sisa rencana" value={`${plannedKcal.toLocaleString("id-ID")} kcal`} />
+      </div>
+
+      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950">
+        {visibleRows.length === 0 ? (
+          <p className="text-zinc-500">Belum ada stok yang tersedia untuk ditampilkan.</p>
+        ) : (
+          <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+            <table className="w-full text-sm">
+              <thead className="bg-zinc-50 text-left text-xs uppercase tracking-wide text-zinc-500 dark:bg-zinc-950">
+                <tr>
+                  <th className="px-3 py-2 font-medium">Barang</th>
+                  <th className="px-3 py-2 font-medium">Sisa</th>
+                  <th className="px-3 py-2 font-medium">Saran</th>
+                  <th className="px-3 py-2 font-medium text-right">Ambil</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleRows.map((row) => (
+                  <tr key={row.id} className="border-t border-zinc-200 dark:border-zinc-800">
+                    <td className="px-3 py-2">
+                      <div className="font-medium text-zinc-900 dark:text-zinc-100">
+                        {row.name}
+                      </div>
+                      <div className="text-xs text-zinc-500">
+                        {row.category}
+                        {row.isHighProtein ? " · protein" : ""}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 tabular-nums text-zinc-500">
+                      {row.available} {row.unit}
+                    </td>
+                    <td className="px-3 py-2 tabular-nums text-zinc-500">
+                      {row.suggestedQuantity > 0 ? `${row.suggestedQuantity} ${row.unit}` : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      <input
+                        className="w-24 rounded-lg border border-zinc-300 bg-white px-2 py-1 text-right text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950"
+                        type="number"
+                        min={0}
+                        step="any"
+                        value={quantities[row.id] ?? ""}
+                        onChange={(e) =>
+                          setQuantities((current) => ({
+                            ...current,
+                            [row.id]: e.target.value,
+                          }))
+                        }
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <label className="flex flex-col gap-1 text-sm sm:max-w-xs">
@@ -106,12 +199,6 @@ export function AllocateForm({
           placeholder="Nama Koordinator"
         />
       </label>
-
-      {lockWarning && (
-        <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-          Akan ditolak: {lockWarning}
-        </p>
-      )}
 
       {error && (
         <p className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
@@ -127,11 +214,20 @@ export function AllocateForm({
 
       <button
         type="submit"
-        disabled={pending || !item}
+        disabled={pending || visibleRows.length === 0}
         className="self-start rounded-lg bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
       >
-        {pending ? "Mengalokasikan…" : "Alokasikan"}
+        {pending ? "Menyimpan…" : "Simpan alokasi"}
       </button>
     </form>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
+      <p className="text-xs uppercase tracking-wide text-zinc-500">{label}</p>
+      <p className="mt-1 text-sm font-semibold tabular-nums">{value}</p>
+    </div>
   );
 }

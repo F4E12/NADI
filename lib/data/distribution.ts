@@ -3,7 +3,10 @@ import {
   householdEntitlement,
   type Entitlement,
 } from "@/lib/rules/entitlement";
-import { distributionDecision } from "@/lib/rules/allocation";
+import {
+  distributionDecision,
+  suggestDistributionSelection,
+} from "@/lib/rules/allocation";
 
 function periodStart(now: Date = new Date()): Date {
   const d = new Date(now);
@@ -37,8 +40,11 @@ export type DistributableStock = {
   inventoryId: string;
   name: string;
   unit: string;
+  category: string;
   isHighProtein: boolean;
+  isWater: boolean;
   available: number;
+  kcalPerUnit: number;
   collectedThisPeriod: boolean;
 };
 
@@ -47,6 +53,7 @@ export type Presence = { tentName: string; at: Date } | null;
 export type DistributionContext = {
   householdId: string;
   householdName: string;
+  householdMemberCount: number;
   tentId: string;
   tentName: string;
   entitlement: Entitlement;
@@ -74,8 +81,10 @@ export async function getDistributionContext(
                 select: {
                   id: true,
                   name: true,
+                  category: true,
                   unit: true,
                   isHighProtein: true,
+                  kcalPerUnit: true,
                 },
               },
             },
@@ -101,8 +110,11 @@ export async function getDistributionContext(
       inventoryId: a.inventory.id,
       name: a.inventory.name,
       unit: a.inventory.unit,
+      category: a.inventory.category,
       isHighProtein: a.inventory.isHighProtein,
+      isWater: a.inventory.category === "Air bersih" || a.inventory.name === "Air bersih",
       available: a.quantity,
+      kcalPerUnit: a.inventory.kcalPerUnit,
       collectedThisPeriod: collectedAllocationIds.has(a.id),
     }))
     .sort((x, y) => x.name.localeCompare(y.name));
@@ -110,12 +122,24 @@ export async function getDistributionContext(
   return {
     householdId: household.id,
     householdName: household.name,
+    householdMemberCount: household.residents.length,
     tentId: household.tentId,
     tentName: household.tent.name,
     entitlement: householdEntitlement(household.residents),
     stock,
     lastPresence: await mostRecentPresence(household.id),
   };
+}
+
+export function suggestDistributionForContext(context: DistributionContext): {
+  inventoryId: string;
+  quantity: number;
+} | null {
+  return suggestDistributionSelection({
+    householdKcalPerDay: context.entitlement.kcalPerDay,
+    householdMemberCount: context.householdMemberCount,
+    stock: context.stock,
+  });
 }
 
 export async function mostRecentPresence(householdId: string): Promise<Presence> {
@@ -187,7 +211,9 @@ export async function recordDistribution(input: {
     requestedQuantity: input.quantity,
     tentAllocationQuantity: allocation.quantity,
     householdKcalPerDay: entitlement.kcalPerDay,
+    householdMemberCount: household.residents.length,
     alreadyCollectedThisPeriod: alreadyCollected > 0,
+    isWaterStock: inventory.name === "Air bersih",
   });
   if (!decision.allowed) return { ok: false, reason: decision.reason };
 
